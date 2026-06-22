@@ -19,10 +19,11 @@ import * as THREE from 'three'
 
 const ACCENT = '#e23d4d'
 
-// 15"W × 25"D × 34"H, scaled ÷10.
+// True proportions of the KUIX505ESS2: 14.87"W × 34.38"H × 25.63"D.
+// Scaled so W = 1.5 → H ≈ 3.47, D ≈ 2.59 (a deep, tall cabinet).
 const W = 1.5
-const H = 3.4
-const D = 2.5
+const H = 3.47
+const D = 2.59
 const WALL = 0.05
 
 type Vec3 = [number, number, number]
@@ -168,13 +169,25 @@ export default function IceMakerModel({
           <boxGeometry args={[WALL, H, D]} />
           <Mat preset="stainless" hl={false} />
         </mesh>
-        <mesh position={[0, H / 2, 0]} castShadow receiveShadow>
-          <boxGeometry args={[W, WALL, D]} />
+        {/* eased stainless top cap (slight overhang, rounded edges) */}
+        <RoundedBox
+          args={[W + 0.03, 0.09, D + 0.03]}
+          radius={0.03}
+          smoothness={4}
+          position={[0, H / 2 - 0.01, 0]}
+          castShadow
+          receiveShadow
+        >
           <Mat preset="stainless" hl={false} />
-        </mesh>
+        </RoundedBox>
         <mesh position={[0, -H / 2, 0]} receiveShadow>
           <boxGeometry args={[W, WALL, D]} />
           <Mat preset="stainlessDark" hl={false} />
+        </mesh>
+        {/* recessed toe kick across the front bottom */}
+        <mesh position={[0, -H / 2 + 0.09, D / 2 - 0.05]}>
+          <boxGeometry args={[W - 0.06, 0.18, 0.04]} />
+          <meshStandardMaterial color="#24272b" metalness={0.4} roughness={0.7} />
         </mesh>
 
         {/* White interior liner (open box) — matches the photos */}
@@ -202,21 +215,21 @@ export default function IceMakerModel({
       </group>
 
       {/* ===== Top louvered vent (sealed system lives behind it) ===== */}
-      <group position={[0, H / 2 - 0.28, D / 2 - 0.03]}>
+      <group position={[0, H / 2 - 0.32, D / 2 - 0.03]}>
         {/* surrounding stainless housing */}
         <mesh position={[0, 0, -0.04]}>
-          <boxGeometry args={[W - 0.05, 0.52, 0.05]} />
+          <boxGeometry args={[W - 0.05, 0.44, 0.05]} />
           <Mat preset="stainlessDark" hl={false} />
         </mesh>
         {/* dark recess behind the louvers */}
         <mesh position={[0, 0, -0.02]}>
-          <boxGeometry args={[W - 0.16, 0.44, 0.02]} />
+          <boxGeometry args={[W - 0.16, 0.37, 0.02]} />
           <meshStandardMaterial color="#141719" metalness={0.3} roughness={0.85} />
         </mesh>
         {/* angled satin louvers */}
-        {Array.from({ length: 7 }).map((_, i) => (
-          <mesh key={i} position={[0, 0.18 - i * 0.06, 0.01]} rotation={[-0.5, 0, 0]} castShadow>
-            <boxGeometry args={[W - 0.15, 0.05, 0.018]} />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <mesh key={i} position={[0, 0.15 - i * 0.058, 0.01]} rotation={[-0.5, 0, 0]} castShadow>
+            <boxGeometry args={[W - 0.15, 0.045, 0.018]} />
             <Mat preset="stainless" hl={false} />
           </mesh>
         ))}
