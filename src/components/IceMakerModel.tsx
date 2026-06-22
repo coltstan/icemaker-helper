@@ -222,8 +222,15 @@ export default function IceMakerModel({
         ))}
       </group>
 
-      {/* ===== Sealed-system components behind the grille ===== */}
-      <Selectable id="condenser" base={[0, 1.28, 0.18]} explodeTo={[0, 2.75, 0.18]} {...sel}>
+      {/* Sealed-compartment floor: separates the sealed system (above, behind
+          the grille) from the ice storage compartment below. */}
+      <mesh position={[0, 0.92, -0.05]}>
+        <boxGeometry args={[W - 0.16, WALL, D - 0.32]} />
+        <Mat preset="whitePlasticDim" hl={false} />
+      </mesh>
+
+      {/* ===== Sealed-system components behind the grille (top compartment) ===== */}
+      <Selectable id="condenser" base={[0, 1.34, 0.16]} explodeTo={[0, 2.75, 0.16]} {...sel}>
         {(hl) => (
           <group>
             {/* coil pack */}
@@ -247,7 +254,7 @@ export default function IceMakerModel({
         )}
       </Selectable>
 
-      <Selectable id="condenser-fan" base={[-0.36, 1.2, -0.55]} explodeTo={[-2.0, 1.2, -0.55]} {...sel}>
+      <Selectable id="condenser-fan" base={[-0.36, 1.3, -0.55]} explodeTo={[-2.0, 1.3, -0.55]} {...sel}>
         {(hl) => (
           <group>
             {/* shroud */}
@@ -275,7 +282,7 @@ export default function IceMakerModel({
         )}
       </Selectable>
 
-      <Selectable id="compressor" base={[0.42, 0.95, -0.62]} explodeTo={[2.1, 0.6, -0.62]} {...sel}>
+      <Selectable id="compressor" base={[0.42, 1.18, -0.72]} explodeTo={[2.1, 1.05, -0.72]} {...sel}>
         {(hl) => (
           <group>
             <mesh castShadow rotation={[0, 0, 0.04]}>
@@ -296,80 +303,83 @@ export default function IceMakerModel({
         )}
       </Selectable>
 
-      {/* ===== Interior: evaporator, cutter grid, distribution tray ===== */}
-      <Selectable id="evaporator-plate" base={[0, 0.42, -0.86]} explodeTo={[0, 0.42, -2.1]} {...sel}>
+      {/* ===== Interior (revealed when the door opens) — matched to the unit ===== */}
+      {/* Evaporator: hangs under the sealed floor; round ice-mold cups face down */}
+      <Selectable id="evaporator-plate" base={[0, 0.66, -0.4]} explodeTo={[0, 1.7, 0.7]} {...sel}>
         {(hl) => (
           <group>
+            {/* stainless housing */}
             <mesh castShadow>
-              <boxGeometry args={[1.04, 0.56, 0.07]} />
+              <boxGeometry args={[1.0, 0.16, 0.58]} />
               <Mat preset="stainless" hl={hl} />
             </mesh>
-            {/* serpentine tubing */}
-            {Array.from({ length: 6 }).map((_, i) => (
-              <mesh key={i} position={[0, -0.22 + i * 0.088, 0.05]} rotation={[0, 0, Math.PI / 2]}>
-                <cylinderGeometry args={[0.018, 0.018, 0.98, 16]} />
-                <Mat preset="copper" hl={hl} />
+            {/* front channel rail */}
+            <mesh position={[0, -0.02, 0.3]}>
+              <boxGeometry args={[1.02, 0.2, 0.04]} />
+              <Mat preset="stainlessDark" hl={hl} />
+            </mesh>
+            {/* row of round mold cups on the underside */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <mesh key={i} position={[-0.36 + i * 0.18, -0.13, 0.0]}>
+                <cylinderGeometry args={[0.072, 0.072, 0.12, 24]} />
+                <Mat preset="chrome" hl={hl} />
+              </mesh>
+            ))}
+            {/* harvest finger slots on the front face */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <mesh key={`f${i}`} position={[-0.36 + i * 0.18, 0.0, 0.31]}>
+                <boxGeometry args={[0.055, 0.06, 0.02]} />
+                <Mat preset="blackPlastic" hl={hl} />
               </mesh>
             ))}
           </group>
         )}
       </Selectable>
 
-      <Selectable id="cutter-grid" base={[0, 0.34, -0.42]} explodeTo={[0, 0.34, 1.2]} {...sel}>
+      {/* Cutter grid: horizontal wire grid just below the evaporator */}
+      <Selectable id="cutter-grid" base={[0, 0.46, -0.4]} explodeTo={[0, 0.46, 1.25]} {...sel}>
         {(hl) => <CutterGrid hl={hl} />}
       </Selectable>
 
-      <Selectable id="distributor-tube" base={[0, 0.78, -0.5]} explodeTo={[0, 2.0, 0.5]} {...sel}>
+      {/* Fill tube + distributor, upper-left */}
+      <Selectable id="distributor-tube" base={[-0.34, 0.48, -0.62]} explodeTo={[-0.34, 1.7, 0.6]} {...sel}>
         {(hl) => (
           <group>
-            {/* white distribution tray */}
-            <mesh>
-              <boxGeometry args={[1.0, 0.07, 0.34]} />
-              <Mat preset="whitePlasticDim" hl={hl} />
+            {/* vertical translucent fill tube */}
+            <mesh position={[0, 0.08, 0]}>
+              <cylinderGeometry args={[0.04, 0.04, 0.52, 20]} />
+              <meshStandardMaterial
+                color="#e8edf0"
+                metalness={0}
+                roughness={0.2}
+                transparent
+                opacity={0.85}
+                emissive={hl ? ACCENT : '#000'}
+                emissiveIntensity={hl ? 0.4 : 0}
+              />
             </mesh>
-            {/* feed tube */}
-            <mesh position={[0, 0.08, 0]} rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.035, 0.035, 0.9, 16]} />
+            {/* short feed crossing to the evaporator */}
+            <mesh position={[0.16, 0.32, 0]} rotation={[0, 0, Math.PI / 2.3]}>
+              <cylinderGeometry args={[0.028, 0.028, 0.42, 16]} />
               <Mat preset="whitePlastic" hl={hl} />
             </mesh>
           </group>
         )}
       </Selectable>
 
-      {/* ===== Water pan + black square drain cap (photo 3) ===== */}
-      <Selectable id="water-pan" base={[0, -0.55, -0.05]} explodeTo={[0, -0.55, 1.35]} {...sel}>
+      {/* Water pan: open white tray on the back wall, left */}
+      <Selectable id="water-pan" base={[-0.3, 0.05, -0.6]} explodeTo={[-0.3, 0.05, 1.1]} {...sel}>
         {(hl) => (
           <group>
-            <mesh receiveShadow>
-              <boxGeometry args={[1.0, 0.12, 1.1]} />
-              <Mat preset="whitePlastic" hl={hl} />
-            </mesh>
-            {/* recessed pan well */}
-            <mesh position={[0, 0.02, 0]}>
-              <boxGeometry args={[0.7, 0.1, 0.7]} />
-              <Mat preset="whitePlasticDim" hl={hl} />
-            </mesh>
-            {/* black square drain cap */}
-            <mesh position={[0, -0.12, 0.0]} castShadow>
-              <boxGeometry args={[0.14, 0.16, 0.14]} />
-              <Mat preset="blackPlastic" hl={hl} />
-            </mesh>
-          </group>
-        )}
-      </Selectable>
-
-      <Selectable id="storage-bin" base={[0, -1.05, 0.18]} explodeTo={[0, -1.05, 1.7]} {...sel}>
-        {(hl) => (
-          <group>
-            <mesh position={[0, -0.3, 0]} receiveShadow>
-              <boxGeometry args={[1.16, 0.06, 1.4]} />
+            <mesh castShadow>
+              <boxGeometry args={[0.54, 0.05, 0.44]} />
               <Mat preset="whitePlastic" hl={hl} />
             </mesh>
             {[
-              [0, 0, -0.7, 1.16, 0.6, 0.06],
-              [-0.58, 0, 0, 0.06, 0.6, 1.4],
-              [0.58, 0, 0, 0.06, 0.6, 1.4],
-              [0, 0, 0.7, 1.16, 0.6, 0.06],
+              [0, 0.08, -0.21, 0.54, 0.16, 0.04],
+              [0, 0.08, 0.21, 0.54, 0.16, 0.04],
+              [-0.27, 0.08, 0, 0.04, 0.16, 0.44],
+              [0.27, 0.08, 0, 0.04, 0.16, 0.44],
             ].map((b, i) => (
               <mesh key={i} position={[b[0], b[1], b[2]]}>
                 <boxGeometry args={[b[3], b[4], b[5]]} />
@@ -380,15 +390,39 @@ export default function IceMakerModel({
         )}
       </Selectable>
 
-      <Selectable id="bin-temp-sensor" base={[0.46, -0.62, -0.82]} explodeTo={[1.7, -0.62, -0.82]} {...sel}>
+      {/* Storage bin: white floor + low walls at the bottom */}
+      <Selectable id="storage-bin" base={[0, -1.12, 0.05]} explodeTo={[0, -1.12, 1.7]} {...sel}>
+        {(hl) => (
+          <group>
+            <mesh position={[0, -0.28, 0]} receiveShadow>
+              <boxGeometry args={[1.18, 0.06, 1.5]} />
+              <Mat preset="whitePlastic" hl={hl} />
+            </mesh>
+            {[
+              [0, 0, -0.74, 1.18, 0.52, 0.06],
+              [-0.59, 0, 0, 0.06, 0.52, 1.5],
+              [0.59, 0, 0, 0.06, 0.52, 1.5],
+              [0, 0, 0.74, 1.18, 0.52, 0.06],
+            ].map((b, i) => (
+              <mesh key={i} position={[b[0], b[1], b[2]]}>
+                <boxGeometry args={[b[3], b[4], b[5]]} />
+                <Mat preset="whitePlastic" hl={hl} />
+              </mesh>
+            ))}
+          </group>
+        )}
+      </Selectable>
+
+      {/* Bin temperature sensor on the right interior wall */}
+      <Selectable id="bin-temp-sensor" base={[0.54, 0.22, -0.5]} explodeTo={[1.9, 0.22, -0.5]} {...sel}>
         {(hl) => (
           <group>
             <mesh>
-              <boxGeometry args={[0.1, 0.1, 0.1]} />
+              <boxGeometry args={[0.09, 0.09, 0.09]} />
               <Mat preset="whitePlastic" hl={hl} />
             </mesh>
-            <mesh position={[0, -0.12, 0]}>
-              <cylinderGeometry args={[0.012, 0.012, 0.16, 8]} />
+            <mesh position={[-0.08, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.012, 0.012, 0.14, 8]} />
               <Mat preset="blackPlastic" hl={hl} />
             </mesh>
           </group>
@@ -410,7 +444,7 @@ export default function IceMakerModel({
         )}
       </Selectable>
 
-      <Selectable id="control-board" base={[-0.4, 0.78, -1.08]} explodeTo={[-1.9, 1.5, -1.08]} {...sel}>
+      <Selectable id="control-board" base={[-0.42, 1.16, -1.05]} explodeTo={[-2.0, 1.4, -1.05]} {...sel}>
         {(hl) => (
           <group>
             <mesh>
@@ -447,12 +481,30 @@ export default function IceMakerModel({
         )}
       </Selectable>
 
-      <Selectable id="water-pump" base={[-0.3, -1.5, -1.12]} explodeTo={[-0.3, -1.5, -2.3]} {...sel}>
+      {/* Water pump module: white housing on the back wall (right) + black pump below */}
+      <Selectable id="water-pump" base={[0.32, 0.08, -0.6]} explodeTo={[0.32, 0.08, 1.1]} {...sel}>
         {(hl) => (
-          <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <cylinderGeometry args={[0.13, 0.13, 0.22, 28]} />
-            <Mat preset="darkMetal" hl={hl} />
-          </mesh>
+          <group>
+            <mesh castShadow>
+              <boxGeometry args={[0.5, 0.36, 0.44]} />
+              <Mat preset="whitePlastic" hl={hl} />
+            </mesh>
+            {/* threaded collar under the housing */}
+            <mesh position={[-0.04, -0.22, 0.12]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.05, 0.05, 0.08, 20]} />
+              <Mat preset="whitePlasticDim" hl={hl} />
+            </mesh>
+            {/* black square pump body */}
+            <mesh position={[-0.04, -0.35, 0.12]} castShadow>
+              <boxGeometry args={[0.13, 0.18, 0.13]} />
+              <Mat preset="blackPlastic" hl={hl} />
+            </mesh>
+            {/* outlet tube */}
+            <mesh position={[-0.04, -0.5, 0.12]}>
+              <cylinderGeometry args={[0.02, 0.02, 0.16, 12]} />
+              <Mat preset="whitePlastic" hl={hl} />
+            </mesh>
+          </group>
         )}
       </Selectable>
 
@@ -535,27 +587,32 @@ function FaceFrame() {
   )
 }
 
-/** Fine cross-hatched chrome cutter grid (matches photos 1–2). */
+/** Fine cross-hatched chrome cutter grid — a HORIZONTAL plane of wires the ice
+ *  slab is pushed through (matches photos 1–2). */
 function CutterGrid({ hl }: { hl: boolean }) {
-  const verticals = 15
-  const horizontals = 9
-  const w = 1.0
-  const h = 0.9
+  const nx = 13 // wires running front-to-back, spaced across the width
+  const nz = 9 // wires running left-to-right, spaced across the depth
+  const w = 0.9
+  const d = 0.58
   return (
     <group>
-      {Array.from({ length: verticals }).map((_, i) => (
-        <mesh key={`v${i}`} position={[-w / 2 + (i * w) / (verticals - 1), 0, 0]}>
-          <cylinderGeometry args={[0.005, 0.005, h, 8]} />
+      {Array.from({ length: nx }).map((_, i) => (
+        <mesh
+          key={`x${i}`}
+          position={[-w / 2 + (i * w) / (nx - 1), 0, 0]}
+          rotation={[Math.PI / 2, 0, 0]}
+        >
+          <cylinderGeometry args={[0.004, 0.004, d, 6]} />
           <Mat preset="wire" hl={hl} />
         </mesh>
       ))}
-      {Array.from({ length: horizontals }).map((_, i) => (
+      {Array.from({ length: nz }).map((_, i) => (
         <mesh
-          key={`h${i}`}
-          position={[0, -h / 2 + (i * h) / (horizontals - 1), 0]}
+          key={`z${i}`}
+          position={[0, 0, -d / 2 + (i * d) / (nz - 1)]}
           rotation={[0, 0, Math.PI / 2]}
         >
-          <cylinderGeometry args={[0.005, 0.005, w, 8]} />
+          <cylinderGeometry args={[0.004, 0.004, w, 6]} />
           <Mat preset="wire" hl={hl} />
         </mesh>
       ))}
