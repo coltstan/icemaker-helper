@@ -1,5 +1,7 @@
 # IceMaker Helper
 
+**Live demo → https://coltstan.github.io/icemaker-helper/**
+
 A single-page app for the **KitchenAid KUIX505ESS2** 15" built-in automatic ice maker:
 
 1. **Parts explorer** — an interactive 3D model with clickable parts that link to where to buy them.
@@ -18,6 +20,21 @@ npm run build    # typecheck + production build
 
 Mobile-friendly: the 3D viewer owns touch gestures (drag to rotate, pinch to zoom), and the part
 detail panel becomes a bottom sheet on small screens.
+
+## Deploy (GitHub Pages)
+
+The app is hosted on GitHub Pages from the `gh-pages` branch. `vite.config.ts` sets
+`base: '/icemaker-helper/'` for production builds so assets resolve under the Pages path. To
+re-deploy after changes:
+
+```bash
+npm run build
+cd dist && touch .nojekyll && git init -q && git checkout -b gh-pages \
+  && git add -A && git commit -qm "Deploy" \
+  && git push -fq https://github.com/coltstan/icemaker-helper.git gh-pages && cd ..
+```
+
+(Or wire up an `actions/deploy-pages` workflow once the token has the `workflow` scope.)
 
 ## Project layout
 
