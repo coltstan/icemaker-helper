@@ -36,12 +36,20 @@ const PRESETS = {
   stainlessDark: { color: '#9aa0a6', metalness: 1, roughness: 0.52, envMapIntensity: 0.8 },
   // Polished chrome for the handle — deliberately brighter than the satin door.
   chrome: { color: '#eaedf0', metalness: 1, roughness: 0.13, envMapIntensity: 1.45 },
-  wire: { color: '#dde2e6', metalness: 1, roughness: 0.22, envMapIntensity: 1.3 },
+  // Cool steel for the evaporator so it reads against the white liner.
+  steel: { color: '#8f9dac', metalness: 1, roughness: 0.4, envMapIntensity: 0.9 },
+  // Darker wire so the cutter grid and coil fins are clearly visible on white.
+  wire: { color: '#6f7b88', metalness: 1, roughness: 0.32, envMapIntensity: 1.0 },
   whitePlastic: { color: '#eef1f3', metalness: 0, roughness: 0.5 },
   whitePlasticDim: { color: '#dbe0e4', metalness: 0, roughness: 0.62 },
+  // Water-system parts get a soft blue so they pop out of the white interior.
+  waterBlue: { color: '#5aa1db', metalness: 0, roughness: 0.4 },
+  waterBlueDim: { color: '#8cc0e8', metalness: 0, roughness: 0.5 },
+  // Sensor pops amber.
+  sensor: { color: '#e6a52b', metalness: 0.3, roughness: 0.45 },
   blackPlastic: { color: '#202327', metalness: 0.25, roughness: 0.45 },
-  darkMetal: { color: '#3a3f45', metalness: 0.85, roughness: 0.4 },
-  copper: { color: '#b06b3a', metalness: 1, roughness: 0.36, envMapIntensity: 1.1 },
+  darkMetal: { color: '#33373d', metalness: 0.85, roughness: 0.4 },
+  copper: { color: '#c47a3c', metalness: 1, roughness: 0.34, envMapIntensity: 1.1 },
   badge: { color: '#15181c', metalness: 0.5, roughness: 0.35 },
 } as const
 
@@ -321,10 +329,10 @@ export default function IceMakerModel({
       <Selectable id="evaporator-plate" base={[0, 0.66, -0.4]} explodeTo={[0, 1.7, 0.7]} {...sel}>
         {(hl) => (
           <group>
-            {/* stainless housing */}
+            {/* steel evaporator housing */}
             <mesh castShadow>
               <boxGeometry args={[1.0, 0.16, 0.58]} />
-              <Mat preset="stainless" hl={hl} />
+              <Mat preset="steel" hl={hl} />
             </mesh>
             {/* front channel rail */}
             <mesh position={[0, -0.02, 0.3]}>
@@ -362,11 +370,11 @@ export default function IceMakerModel({
             <mesh position={[0, 0.08, 0]}>
               <cylinderGeometry args={[0.04, 0.04, 0.52, 20]} />
               <meshStandardMaterial
-                color="#e8edf0"
+                color="#74c0ef"
                 metalness={0}
                 roughness={0.2}
                 transparent
-                opacity={0.85}
+                opacity={0.8}
                 emissive={hl ? ACCENT : '#000'}
                 emissiveIntensity={hl ? 0.4 : 0}
               />
@@ -374,7 +382,7 @@ export default function IceMakerModel({
             {/* short feed crossing to the evaporator */}
             <mesh position={[0.16, 0.32, 0]} rotation={[0, 0, Math.PI / 2.3]}>
               <cylinderGeometry args={[0.028, 0.028, 0.42, 16]} />
-              <Mat preset="whitePlastic" hl={hl} />
+              <Mat preset="waterBlue" hl={hl} />
             </mesh>
           </group>
         )}
@@ -386,7 +394,7 @@ export default function IceMakerModel({
           <group>
             <mesh castShadow>
               <boxGeometry args={[0.54, 0.05, 0.44]} />
-              <Mat preset="whitePlastic" hl={hl} />
+              <Mat preset="waterBlue" hl={hl} />
             </mesh>
             {[
               [0, 0.08, -0.21, 0.54, 0.16, 0.04],
@@ -396,7 +404,7 @@ export default function IceMakerModel({
             ].map((b, i) => (
               <mesh key={i} position={[b[0], b[1], b[2]]}>
                 <boxGeometry args={[b[3], b[4], b[5]]} />
-                <Mat preset="whitePlastic" hl={hl} />
+                <Mat preset="waterBlue" hl={hl} />
               </mesh>
             ))}
           </group>
@@ -432,7 +440,7 @@ export default function IceMakerModel({
           <group>
             <mesh>
               <boxGeometry args={[0.09, 0.09, 0.09]} />
-              <Mat preset="whitePlastic" hl={hl} />
+              <Mat preset="sensor" hl={hl} />
             </mesh>
             <mesh position={[-0.08, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
               <cylinderGeometry args={[0.012, 0.012, 0.14, 8]} />
@@ -500,12 +508,12 @@ export default function IceMakerModel({
           <group>
             <mesh castShadow>
               <boxGeometry args={[0.5, 0.36, 0.44]} />
-              <Mat preset="whitePlastic" hl={hl} />
+              <Mat preset="waterBlueDim" hl={hl} />
             </mesh>
             {/* threaded collar under the housing */}
             <mesh position={[-0.04, -0.22, 0.12]} rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.05, 0.05, 0.08, 20]} />
-              <Mat preset="whitePlasticDim" hl={hl} />
+              <Mat preset="waterBlue" hl={hl} />
             </mesh>
             {/* black square pump body */}
             <mesh position={[-0.04, -0.35, 0.12]} castShadow>
@@ -515,7 +523,7 @@ export default function IceMakerModel({
             {/* outlet tube */}
             <mesh position={[-0.04, -0.5, 0.12]}>
               <cylinderGeometry args={[0.02, 0.02, 0.16, 12]} />
-              <Mat preset="whitePlastic" hl={hl} />
+              <Mat preset="waterBlue" hl={hl} />
             </mesh>
           </group>
         )}
