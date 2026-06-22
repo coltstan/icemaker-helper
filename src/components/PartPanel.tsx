@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { partById, partsInRegion, partUrl, MODEL_URL } from '../data/parts'
+import { SYSTEMS } from '../data/systems'
 import type { Part } from '../data/types'
 
 interface PartPanelProps {
@@ -21,7 +23,11 @@ export default function PartPanel({ selectedId, onSelect }: PartPanelProps) {
       role="region"
       aria-label="Part details"
     >
-      {part ? <PartDetail part={part} onSelect={onSelect} /> : <EmptyState />}
+      {part ? (
+        <PartDetail key={part.id} part={part} onSelect={onSelect} />
+      ) : (
+        <EmptyState />
+      )}
     </div>
   )
 }
@@ -32,35 +38,63 @@ function EmptyState() {
       <h2 className="mb-1 text-base font-semibold text-zinc-800 dark:text-zinc-100">
         Part details
       </h2>
-      <p>Tap a part in the 3D model or pick one from the list to see what it does, where it sits, and where to buy it.</p>
+      <p>
+        Tap a part in the 3D model or pick one from the list to see what it does, where it sits, and
+        where to buy it.
+      </p>
     </div>
   )
 }
 
 function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | null) => void }) {
   const siblings = partsInRegion(part.region).filter((p) => p.id !== part.id)
+  const system = SYSTEMS[part.group]
+  const [copied, setCopied] = useState(false)
+
+  function copyNumber() {
+    if (!part.partNumber) return
+    navigator.clipboard?.writeText(part.partNumber).then(
+      () => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      },
+      () => {},
+    )
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
+          <span
+            className={`mb-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${system.chip}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${system.dot}`} />
+            {system.label}
+          </span>
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{part.name}</h2>
           {part.partNumber && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Part #{part.partNumber}
-            </p>
+            <button
+              type="button"
+              onClick={copyNumber}
+              title="Copy part number"
+              className="group mt-0.5 inline-flex cursor-pointer items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:text-zinc-400 dark:hover:text-accent-400"
+            >
+              <span>Part #{part.partNumber}</span>
+              <span className="text-xs text-zinc-400 group-hover:text-accent-700 dark:group-hover:text-accent-400">
+                {copied ? '✓ copied' : 'copy'}
+              </span>
+            </button>
           )}
           {part.oemNumber && (
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
-              OEM / mfr #{part.oemNumber}
-            </p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">OEM / mfr #{part.oemNumber}</p>
           )}
         </div>
         <button
           type="button"
           onClick={() => onSelect(null)}
           aria-label="Close part details"
-          className="cursor-pointer rounded-md p-1.5 text-zinc-400 transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          className="shrink-0 cursor-pointer rounded-md p-1.5 text-zinc-400 transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
         >
           ✕
         </button>
@@ -112,7 +146,7 @@ function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | nu
           href={MODEL_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="cursor-pointer text-accent-700 underline hover:text-accent-700 dark:text-accent-400"
+          className="cursor-pointer text-accent-700 underline hover:text-accent-800 dark:text-accent-400"
         >
           Open the model page
         </a>

@@ -42,11 +42,11 @@ const PRESETS = {
   wire: { color: '#6f7b88', metalness: 1, roughness: 0.32, envMapIntensity: 1.0 },
   whitePlastic: { color: '#eef1f3', metalness: 0, roughness: 0.5 },
   whitePlasticDim: { color: '#dbe0e4', metalness: 0, roughness: 0.62 },
-  // Water-system parts get a soft blue so they pop out of the white interior.
-  waterBlue: { color: '#5aa1db', metalness: 0, roughness: 0.4 },
-  waterBlueDim: { color: '#8cc0e8', metalness: 0, roughness: 0.5 },
-  // Sensor pops amber.
-  sensor: { color: '#e6a52b', metalness: 0.3, roughness: 0.45 },
+  // Water-system parts: a bold, slightly warm blue so they pop on the white liner.
+  waterBlue: { color: '#2f8fe0', metalness: 0, roughness: 0.4 },
+  waterBlueDim: { color: '#62b0ee', metalness: 0, roughness: 0.48 },
+  // Controls (sensor, boards) read green to match the system colour key.
+  control: { color: '#1f9d57', metalness: 0.3, roughness: 0.45 },
   blackPlastic: { color: '#202327', metalness: 0.25, roughness: 0.45 },
   darkMetal: { color: '#33373d', metalness: 0.85, roughness: 0.4 },
   copper: { color: '#c47a3c', metalness: 1, roughness: 0.34, envMapIntensity: 1.1 },
@@ -440,7 +440,7 @@ export default function IceMakerModel({
           <group>
             <mesh>
               <boxGeometry args={[0.09, 0.09, 0.09]} />
-              <Mat preset="sensor" hl={hl} />
+              <Mat preset="control" hl={hl} />
             </mesh>
             <mesh position={[-0.08, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
               <cylinderGeometry args={[0.012, 0.012, 0.14, 8]} />
@@ -475,7 +475,7 @@ export default function IceMakerModel({
             <mesh position={[0, 0, 0.03]}>
               <boxGeometry args={[0.42, 0.28, 0.02]} />
               <meshStandardMaterial
-                color="#1f5132"
+                color="#1f9d57"
                 metalness={0.2}
                 roughness={0.6}
                 emissive={hl ? ACCENT : '#000'}

@@ -5,13 +5,16 @@ import {
   ContactShadows,
   Environment,
   Lightformer,
+  useProgress,
 } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import IceMakerModel from './IceMakerModel'
+import { SYSTEMS, SYSTEM_KEY } from '../data/systems'
 
 interface Viewer3DProps {
   selectedRegion: string | null
+  selectedName: string | null
   onSelect: (region: string | null) => void
 }
 
@@ -45,11 +48,8 @@ function Toggle({
 function Studio() {
   return (
     <Environment resolution={256} frames={1}>
-      {/* large soft key overhead */}
       <Lightformer intensity={3} position={[0, 5, -2]} scale={[14, 7, 1]} color="#ffffff" />
-      {/* broad front fill so faces toward the camera read as bright metal */}
       <Lightformer intensity={1.6} position={[0, 1, 6]} scale={[14, 9, 1]} color="#eef3fb" />
-      {/* side wraps */}
       <Lightformer
         intensity={1.8}
         position={[-5, 1.5, 2]}
@@ -64,7 +64,13 @@ function Studio() {
         scale={[10, 9, 1]}
         color="#dfe7f2"
       />
-      <Lightformer intensity={0.7} position={[0, -3, 2]} rotation-x={Math.PI / 2} scale={[12, 12, 1]} color="#ffffff" />
+      <Lightformer
+        intensity={0.7}
+        position={[0, -3, 2]}
+        rotation-x={Math.PI / 2}
+        scale={[12, 12, 1]}
+        color="#ffffff"
+      />
     </Environment>
   )
 }
@@ -85,7 +91,21 @@ function RepaintOnVisible() {
   return null
 }
 
-export default function Viewer3D({ selectedRegion, onSelect }: Viewer3DProps) {
+/** Lightweight loading overlay shown while the studio environment compiles. */
+function LoadingOverlay() {
+  const { active } = useProgress()
+  if (!active) return null
+  return (
+    <div className="pointer-events-none absolute inset-0 grid place-items-center">
+      <div className="flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-sm font-medium text-zinc-600 ring-1 ring-zinc-200 backdrop-blur dark:bg-zinc-800/80 dark:text-zinc-300 dark:ring-zinc-700">
+        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-accent-600" />
+        Loading model…
+      </div>
+    </div>
+  )
+}
+
+export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Viewer3DProps) {
   const controls = useRef<OrbitControlsImpl>(null)
   const [doorOpen, setDoorOpen] = useState(false)
   const [exploded, setExploded] = useState(false)
@@ -145,6 +165,8 @@ export default function Viewer3D({ selectedRegion, onSelect }: Viewer3DProps) {
         />
       </Canvas>
 
+      <LoadingOverlay />
+
       {/* Control bar */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-center justify-between gap-2 p-3">
         <div className="pointer-events-auto flex flex-wrap gap-2">
@@ -164,9 +186,28 @@ export default function Viewer3D({ selectedRegion, onSelect }: Viewer3DProps) {
         </button>
       </div>
 
-      <p className="pointer-events-none absolute inset-x-0 bottom-0 p-3 text-center text-xs font-medium text-zinc-500/90 dark:text-zinc-400/90">
-        Drag to rotate · scroll / pinch to zoom · tap a part for details
-      </p>
+      {/* Colour key (hidden on small screens) */}
+      <div className="pointer-events-none absolute bottom-3 left-3 hidden flex-wrap gap-x-3 gap-y-1 rounded-lg bg-white/75 px-2.5 py-1.5 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200/70 backdrop-blur sm:flex dark:bg-zinc-900/70 dark:text-zinc-300 dark:ring-zinc-700/60">
+        {SYSTEM_KEY.map((g) => (
+          <span key={g} className="flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${SYSTEMS[g].dot}`} />
+            {SYSTEMS[g].short}
+          </span>
+        ))}
+      </div>
+
+      {/* Selected-part caption / hint */}
+      {selectedName ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-3">
+          <span className="rounded-full bg-accent-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+            {selectedName}
+          </span>
+        </div>
+      ) : (
+        <p className="pointer-events-none absolute inset-x-0 bottom-0 hidden p-3 text-center text-xs font-medium text-zinc-500/90 dark:text-zinc-400/90 lg:block">
+          Drag to rotate · scroll / pinch to zoom · tap a part for details
+        </p>
+      )}
     </div>
   )
 }
