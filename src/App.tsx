@@ -71,27 +71,33 @@ export default function App() {
           {tab === 'explore' ? (
             <div className="space-y-6">
               <Hero onSolve={() => setTab('solve')} onAsk={() => setTab('ai')} />
-              <div className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-                <div className="space-y-5">
-                  <Viewer3D
-                    selectedRegion={selectedRegion}
-                    selectedName={selectedName}
-                    onSelect={selectRegion}
-                  />
-                  <div className="card p-5">
-                    <div className="mb-3 flex items-baseline justify-between">
-                      <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                        Parts list
-                      </h2>
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                        {purchasable} replaceable parts
-                      </span>
-                    </div>
-                    <PartsList selectedId={selectedId} onSelect={setSelectedId} />
+              <div className="grid items-start gap-6 lg:grid-cols-[1.6fr_1fr]">
+                <Viewer3D
+                  selectedRegion={selectedRegion}
+                  selectedName={selectedName}
+                  onSelect={selectRegion}
+                />
+                <aside className="lg:sticky lg:top-[4.75rem]">
+                  <div className="card flex h-[58vh] flex-col overflow-hidden lg:h-[72vh]">
+                    {selectedId ? (
+                      <PartPanel selectedId={selectedId} onSelect={setSelectedId} />
+                    ) : (
+                      <div className="flex h-full flex-col p-5">
+                        <div className="mb-3 flex items-baseline justify-between">
+                          <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                            Parts
+                          </h2>
+                          <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                            {purchasable} replaceable
+                          </span>
+                        </div>
+                        <div className="-mr-2 flex-1 overflow-y-auto pr-2">
+                          <PartsList selectedId={selectedId} onSelect={setSelectedId} />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                {/* Right column on desktop; bottom sheet on mobile. */}
-                <PartPanel selectedId={selectedId} onSelect={setSelectedId} />
+                </aside>
               </div>
             </div>
           ) : tab === 'solve' ? (

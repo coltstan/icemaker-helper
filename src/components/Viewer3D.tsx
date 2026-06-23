@@ -329,6 +329,13 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
   return (
     <>
     <div className="elev-lg relative h-[58vh] w-full overflow-hidden rounded-3xl bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300 ring-1 ring-zinc-200/70 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/60 lg:h-[72vh]">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(58% 52% at 50% 40%, rgba(255,255,255,0.22), transparent 72%)',
+        }}
+      />
       <Canvas
         shadows
         frameloop="demand"
@@ -341,16 +348,16 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         aria-label="Interactive 3D model of the KUIX505ESS2 ice maker. Drag to rotate, scroll or pinch to zoom, and tap a part to see details."
         onPointerMissed={() => onSelect(null)}
       >
-        <ambientLight intensity={0.6} />
+        <ambientLight intensity={0.4} />
         <directionalLight
           position={[5, 8, 4]}
-          intensity={1.2}
+          intensity={1.9}
           castShadow
-          shadow-mapSize={[1024, 1024]}
+          shadow-mapSize={[2048, 2048]}
           shadow-bias={-0.0002}
         />
-        <directionalLight position={[-5, 3, -3]} intensity={0.5} />
-        <directionalLight position={[0, 2, 7]} intensity={0.4} />
+        <directionalLight position={[-6, 3, -3]} intensity={0.55} />
+        <directionalLight position={[0, 2, 7]} intensity={0.45} />
         <RepaintOnVisible />
         <AutoSpin active={!engaged} />
         <CameraRig region={selectedRegion} />
@@ -366,13 +373,13 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
           />
         </group>
         <ContactShadows
-          position={[0, -1.78, 0]}
-          opacity={0.45}
-          scale={7}
-          blur={2.6}
+          position={[0, -1.8, 0]}
+          opacity={0.62}
+          scale={6.5}
+          blur={2.2}
           far={4.5}
           resolution={1024}
-          color="#0b1220"
+          color="#000000"
         />
         <OrbitControls
           ref={controls}

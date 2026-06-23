@@ -105,7 +105,6 @@ interface SelectableProps {
   explodeTo?: Vec3
   explodeRef: React.MutableRefObject<number>
   selectedRegion: string | null
-  exploded: boolean
   onSelect: (region: string | null) => void
   children: (highlighted: boolean) => ReactNode
 }
@@ -116,7 +115,6 @@ function Selectable({
   explodeTo,
   explodeRef,
   selectedRegion,
-  exploded,
   onSelect,
   children,
 }: SelectableProps) {
@@ -152,13 +150,13 @@ function Selectable({
       onPointerOut={() => setHovered(false)}
     >
       {children(isSelected || hovered)}
-      {exploded && REGION_LABELS[id] && (
-        <Html center distanceFactor={9} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+      {(hovered || isSelected) && REGION_LABELS[id] && (
+        <Html center distanceFactor={8} zIndexRange={[30, 0]} style={{ pointerEvents: 'none' }}>
           <div
-            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow ring-1 ${
+            className={`-translate-y-3 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-lg ring-1 backdrop-blur ${
               isSelected
-                ? 'bg-accent-600 text-white ring-white/20'
-                : 'bg-zinc-900/90 text-white ring-white/10'
+                ? 'bg-accent-600 text-white ring-white/25'
+                : 'bg-zinc-900/85 text-white ring-white/10'
             }`}
           >
             {REGION_LABELS[id]}
@@ -207,7 +205,7 @@ export default function IceMakerModel({
     if (animating) invalidate()
   })
 
-  const sel = { explodeRef, selectedRegion, exploded, onSelect }
+  const sel = { explodeRef, selectedRegion, onSelect }
 
   return (
     <group position={[0, 0.05, 0]}>

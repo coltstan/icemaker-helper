@@ -9,40 +9,25 @@ interface PartPanelProps {
   onSelect: (id: string | null) => void
 }
 
-/**
- * Detail panel for the selected part. On desktop it sits in the right column;
- * on mobile it slides up as a bottom sheet when a part is selected.
- */
+/** Inline detail view for the selected part. Rendered in the right column / below
+ *  the viewer; App shows the parts list when nothing is selected. */
 export default function PartPanel({ selectedId, onSelect }: PartPanelProps) {
   const part = selectedId ? partById(selectedId) : undefined
+  if (!part) return null
 
   return (
-    <div
-      className={`fixed inset-x-0 bottom-0 z-40 max-h-[75vh] overflow-y-auto rounded-t-3xl border-t border-zinc-200 bg-white p-5 shadow-2xl backdrop-blur-xl transition-transform duration-300 dark:border-zinc-700 dark:bg-zinc-900 lg:static lg:max-h-none lg:rounded-3xl lg:border-0 lg:bg-white/70 lg:p-5 lg:shadow-none lg:ring-1 lg:ring-zinc-200/70 lg:elev lg:dark:bg-zinc-900/60 lg:dark:ring-zinc-700/60 ${
-        part ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'
-      }`}
-      role="region"
-      aria-label="Part details"
-    >
-      {part ? (
-        <PartDetail key={part.id} part={part} onSelect={onSelect} />
-      ) : (
-        <EmptyState />
-      )}
-    </div>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div className="hidden text-sm text-zinc-500 dark:text-zinc-400 lg:block">
-      <h2 className="mb-1 text-base font-semibold text-zinc-800 dark:text-zinc-100">
-        Part details
-      </h2>
-      <p>
-        Tap a part in the 3D model or pick one from the list to see what it does, where it sits, and
-        where to buy it.
-      </p>
+    <div className="flex h-full flex-col overflow-y-auto p-5" role="region" aria-label="Part details">
+      <button
+        type="button"
+        onClick={() => onSelect(null)}
+        className="mb-4 inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      >
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        All parts
+      </button>
+      <PartDetail key={part.id} part={part} onSelect={onSelect} />
     </div>
   )
 }
@@ -66,40 +51,32 @@ function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | nu
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <span
-            className={`mb-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${system.chip}`}
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${system.dot}`} />
-            {system.label}
-          </span>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{part.name}</h2>
-          {part.partNumber && (
-            <button
-              type="button"
-              onClick={copyNumber}
-              title="Copy part number"
-              className="group mt-0.5 inline-flex cursor-pointer items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:text-zinc-400 dark:hover:text-accent-400"
-            >
-              <span>Part #{part.partNumber}</span>
-              <span className="text-xs text-zinc-400 group-hover:text-accent-700 dark:group-hover:text-accent-400">
-                {copied ? '✓ copied' : 'copy'}
-              </span>
-            </button>
-          )}
-          {part.oemNumber && (
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">OEM / mfr #{part.oemNumber}</p>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => onSelect(null)}
-          aria-label="Close part details"
-          className="shrink-0 cursor-pointer rounded-md p-1.5 text-zinc-400 transition-colors duration-200 hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+      <div className="min-w-0">
+        <span
+          className={`mb-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${system.chip}`}
         >
-          ✕
-        </button>
+          <span className={`h-1.5 w-1.5 rounded-full ${system.dot}`} />
+          {system.label}
+        </span>
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          {part.name}
+        </h2>
+        {part.partNumber && (
+          <button
+            type="button"
+            onClick={copyNumber}
+            title="Copy part number"
+            className="group mt-0.5 inline-flex cursor-pointer items-center gap-1.5 text-sm text-zinc-500 transition-colors hover:text-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:text-zinc-400 dark:hover:text-accent-400"
+          >
+            <span>Part #{part.partNumber}</span>
+            <span className="text-xs text-zinc-400 group-hover:text-accent-700 dark:group-hover:text-accent-400">
+              {copied ? '✓ copied' : 'copy'}
+            </span>
+          </button>
+        )}
+        {part.oemNumber && (
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">OEM / mfr #{part.oemNumber}</p>
+        )}
       </div>
 
       {!part.infoOnly && (
@@ -184,7 +161,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
         {label}
       </p>
-      <p className="mt-0.5 text-sm text-zinc-700 dark:text-zinc-200">{children}</p>
+      <p className="mt-0.5 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">{children}</p>
     </div>
   )
 }
