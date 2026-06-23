@@ -4,9 +4,10 @@ import PartsList from './components/PartsList'
 import PartPanel from './components/PartPanel'
 import Wizard from './components/Wizard'
 import WarrantyCard from './components/WarrantyCard'
+import Assistant from './components/Assistant'
 import { MODEL_NUMBER, partsInRegion, partById, PARTS } from './data/parts'
 
-type Tab = 'explore' | 'solve'
+type Tab = 'explore' | 'solve' | 'ai'
 
 const REPO_URL = 'https://github.com/coltstan/icemaker-helper'
 
@@ -54,6 +55,9 @@ export default function App() {
               <TabButton active={tab === 'solve'} onClick={() => setTab('solve')}>
                 Problem solver
               </TabButton>
+              <TabButton active={tab === 'ai'} onClick={() => setTab('ai')}>
+                Ask AI
+              </TabButton>
             </nav>
             <ThemeToggle />
           </div>
@@ -87,8 +91,10 @@ export default function App() {
               <PartPanel selectedId={selectedId} onSelect={setSelectedId} />
             </div>
           </div>
-        ) : (
+        ) : tab === 'solve' ? (
           <Wizard />
+        ) : (
+          <Assistant />
         )}
 
         <div className="mt-6">
