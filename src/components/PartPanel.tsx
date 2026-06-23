@@ -18,7 +18,7 @@ export default function PartPanel({ selectedId, onSelect }: PartPanelProps) {
 
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-40 max-h-[75vh] overflow-y-auto rounded-t-2xl border-t border-zinc-200 bg-white p-5 shadow-2xl transition-transform duration-300 dark:border-zinc-700 dark:bg-zinc-900 lg:static lg:max-h-none lg:rounded-2xl lg:border-0 lg:p-5 lg:shadow-none lg:ring-1 lg:ring-zinc-200/70 lg:elev lg:dark:ring-zinc-700/60 ${
+      className={`fixed inset-x-0 bottom-0 z-40 max-h-[75vh] overflow-y-auto rounded-t-3xl border-t border-zinc-200 bg-white p-5 shadow-2xl backdrop-blur-xl transition-transform duration-300 dark:border-zinc-700 dark:bg-zinc-900 lg:static lg:max-h-none lg:rounded-3xl lg:border-0 lg:bg-white/70 lg:p-5 lg:shadow-none lg:ring-1 lg:ring-zinc-200/70 lg:elev lg:dark:bg-zinc-900/60 lg:dark:ring-zinc-700/60 ${
         part ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'
       }`}
       role="region"
@@ -136,7 +136,7 @@ function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | nu
           href={partUrl(part, modelPageUrl)}
           target="_blank"
           rel="noopener noreferrer"
-          className="block cursor-pointer rounded-lg bg-accent-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors duration-200 hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
+          className="btn-primary block cursor-pointer rounded-xl px-4 py-2.5 text-center text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
         >
           View / buy part on PartSelect
         </a>

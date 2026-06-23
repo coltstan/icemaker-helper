@@ -31,15 +31,15 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-full bg-gradient-to-b from-zinc-50 to-zinc-100 text-zinc-900 dark:from-zinc-950 dark:to-zinc-900 dark:text-zinc-100">
+    <div className="relative min-h-full bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="aurora" aria-hidden="true" />
 
-      <header className="sticky top-0 z-30 border-b-2 border-accent-600 bg-zinc-950/95 text-white backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <header className="glass-bar sticky top-0 z-30">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Logo />
             <div>
-              <h1 className="text-[15px] font-semibold uppercase leading-tight tracking-[0.18em]">
+              <h1 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
                 IceMaker Helper
               </h1>
               <ModelPicker />
@@ -47,14 +47,14 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2">
             <nav
-              className="flex gap-1 rounded-xl bg-zinc-900 p-1 ring-1 ring-zinc-800"
+              className="flex gap-1 rounded-full bg-zinc-100/80 p-1 ring-1 ring-zinc-200/70 backdrop-blur dark:bg-zinc-800/60 dark:ring-zinc-700/60"
               aria-label="Sections"
             >
               <TabButton active={tab === 'explore'} onClick={() => setTab('explore')}>
-                Parts explorer
+                Explore
               </TabButton>
               <TabButton active={tab === 'solve'} onClick={() => setTab('solve')}>
-                Problem solver
+                Diagnose
               </TabButton>
               <TabButton active={tab === 'ai'} onClick={() => setTab('ai')}>
                 Ask AI
@@ -65,19 +65,19 @@ export default function App() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-6">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8">
         <div key={tab} className="animate-up">
           {tab === 'explore' ? (
-            <div className="space-y-4">
-              <TipBanner onSolve={() => setTab('solve')} />
+            <div className="space-y-6">
+              <Hero onSolve={() => setTab('solve')} onAsk={() => setTab('ai')} />
               <div className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <Viewer3D
                     selectedRegion={selectedRegion}
                     selectedName={selectedName}
                     onSelect={selectRegion}
                   />
-                  <div className="elev rounded-2xl bg-white/90 p-4 ring-1 ring-zinc-200/70 backdrop-blur dark:bg-zinc-900/90 dark:ring-zinc-700/60">
+                  <div className="card p-5">
                     <div className="mb-3 flex items-baseline justify-between">
                       <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
                         Parts list
@@ -100,12 +100,12 @@ export default function App() {
           )}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-8">
           <WarrantyCard />
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-zinc-200 dark:border-zinc-800">
+      <footer className="relative z-10 mt-4 border-t border-zinc-200/70 dark:border-zinc-800/70">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-zinc-500 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl">
             Stylised reference model — not to exact scale. Confirm fitment with your model number
@@ -133,24 +133,58 @@ export default function App() {
   )
 }
 
+function Hero({ onSolve, onAsk }: { onSolve: () => void; onAsk: () => void }) {
+  return (
+    <section className="pt-2">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-50 px-3 py-1 text-xs font-semibold text-accent-700 ring-1 ring-accent-200/70 dark:bg-accent-950/40 dark:text-accent-300 dark:ring-accent-900/60">
+        <span className="h-1.5 w-1.5 rounded-full bg-accent-500" />
+        KitchenAid 15" ice maker
+      </span>
+      <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-[2.6rem] sm:leading-[1.1]">
+        Your ice maker, <span className="text-gradient">inside out</span>.
+      </h2>
+      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-300">
+        Spin the 3D model, tap any part to see what it does and where to buy it, then fix the most
+        common problems yourself — guided to the cheapest correct solution first.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onSolve}
+          className="btn-primary cursor-pointer rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950"
+        >
+          Diagnose a problem
+        </button>
+        <button
+          type="button"
+          onClick={onAsk}
+          className="cursor-pointer rounded-xl bg-white/70 px-4 py-2 text-sm font-semibold text-zinc-800 ring-1 ring-zinc-200/80 backdrop-blur transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:bg-zinc-800/70 dark:text-zinc-100 dark:ring-zinc-700/70 dark:hover:bg-zinc-800"
+        >
+          Ask the AI assistant
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function ModelPicker() {
   const { model, setModelId } = useModel()
   return (
-    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-400">
+    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
       <span>KitchenAid</span>
       <select
         value={model.id}
         onChange={(e) => setModelId(e.target.value)}
         aria-label="Select model"
-        className="cursor-pointer rounded-md bg-zinc-900 px-1.5 py-0.5 font-medium text-zinc-100 ring-1 ring-zinc-700 transition-colors hover:ring-accent-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+        className="cursor-pointer rounded-md bg-zinc-100 px-1.5 py-0.5 font-medium text-zinc-700 ring-1 ring-zinc-200 transition-colors hover:ring-accent-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700"
       >
         {MODELS.map((m) => (
-          <option key={m.id} value={m.id} className="bg-zinc-900 text-zinc-100">
+          <option key={m.id} value={m.id}>
             {m.name}
           </option>
         ))}
       </select>
-      <span className="hidden sm:inline">· 15" built-in ice maker</span>
+      <span className="hidden sm:inline">· 15" built-in</span>
     </p>
   )
 }
@@ -174,7 +208,7 @@ function ThemeToggle() {
       onClick={() => setDark((v) => !v)}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={dark ? 'Light mode' : 'Dark mode'}
-      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-zinc-900 text-zinc-200 ring-1 ring-zinc-800 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200 transition-colors hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700 dark:hover:text-white"
     >
       {dark ? (
         <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -190,31 +224,12 @@ function ThemeToggle() {
   )
 }
 
-function TipBanner({ onSolve }: { onSolve: () => void }) {
-  return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-accent-200 bg-accent-50/80 px-4 py-3 text-sm backdrop-blur dark:border-accent-900 dark:bg-accent-950/30 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-zinc-700 dark:text-zinc-200">
-        <span className="font-semibold text-accent-700 dark:text-accent-300">Not making ice?</span>{' '}
-        The most common cause is a dirty condenser — and cleaning it is free. Start with the guided
-        problem solver before buying parts.
-      </p>
-      <button
-        type="button"
-        onClick={onSolve}
-        className="shrink-0 cursor-pointer self-start rounded-lg bg-accent-600 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 sm:self-auto"
-      >
-        Open problem solver
-      </button>
-    </div>
-  )
-}
-
-/** KitchenAid-style red brand mark — no external asset needed. */
+/** KitchenAid-style gradient brand mark — no external asset needed. */
 function Logo() {
   return (
     <div
       aria-hidden="true"
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-600 text-white shadow-sm ring-1 ring-white/15"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 text-white shadow-sm shadow-accent-600/30 ring-1 ring-white/15"
     >
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 3l2.2 4.5L19 8l-3.5 3.3.8 4.7L12 13.8 7.7 16l.8-4.7L5 8l4.8-.5z" />
@@ -237,8 +252,10 @@ function TabButton({
       type="button"
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
-      className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 ${
-        active ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-300 hover:text-white'
+      className={`cursor-pointer rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 ${
+        active
+          ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-white'
+          : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
       }`}
     >
       {children}

@@ -4,7 +4,7 @@ export default function WarrantyCard() {
   const [open, setOpen] = useState(false)
 
   return (
-    <section className="elev rounded-2xl bg-white ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-700/60">
+    <section className="card overflow-hidden">
       <button
         type="button"
         aria-expanded={open}

@@ -100,7 +100,7 @@ function Question({
   onChoose: (label: string, next: string) => void
 }) {
   return (
-    <div className="elev rounded-2xl bg-white p-5 ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-700/60">
+    <div className="card p-5">
       <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{step.question}</h2>
       {step.help && (
         <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-300">{step.help}</p>
@@ -145,7 +145,7 @@ function Conclusion({ step }: { step: ConclusionStep }) {
 
   return (
     <div className="space-y-4">
-      <div className={`elev rounded-2xl border bg-white p-5 dark:bg-zinc-900 ${tone.ring}`}>
+      <div className="card p-5">
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${tone.chip}`}>
             {tone.label}
@@ -187,7 +187,7 @@ function Conclusion({ step }: { step: ConclusionStep }) {
                 href={partUrl(part)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cursor-pointer rounded-lg bg-accent-600 px-3 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                className="btn-primary cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
               >
                 View part
               </a>

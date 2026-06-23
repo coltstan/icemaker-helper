@@ -106,7 +106,7 @@ export default function Assistant() {
   if (!apiKey) {
     return (
       <div className="mx-auto max-w-2xl">
-        <div className="elev rounded-2xl bg-white p-6 ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-700/60">
+        <div className="card p-6">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">AI diagnostician</h2>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
             Describe your problem in plain English and get a diagnosis grounded in this model's real
@@ -127,7 +127,7 @@ export default function Assistant() {
             <button
               type="button"
               onClick={saveKey}
-              className="cursor-pointer rounded-lg bg-accent-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+              className="btn-primary cursor-pointer rounded-xl px-5 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             >
               Start
             </button>
@@ -143,7 +143,7 @@ export default function Assistant() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col">
-      <div className="elev flex h-[60vh] flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-700/60">
+      <div className="card flex h-[60vh] flex-col overflow-hidden">
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 && !streaming && (
             <div className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -201,7 +201,7 @@ export default function Assistant() {
           <button
             type="submit"
             disabled={busy || !input.trim()}
-            className="cursor-pointer rounded-lg bg-accent-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-primary cursor-pointer rounded-xl px-5 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Send
           </button>

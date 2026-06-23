@@ -176,7 +176,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
   }
 
   return (
-    <div className="relative h-[58vh] w-full overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300 ring-1 ring-zinc-200/70 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/60 lg:h-[72vh]">
+    <div className="elev-lg relative h-[58vh] w-full overflow-hidden rounded-3xl bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300 ring-1 ring-zinc-200/70 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/60 lg:h-[72vh]">
       <Canvas
         shadows
         frameloop="demand"

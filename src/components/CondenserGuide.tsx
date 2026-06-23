@@ -23,7 +23,7 @@ const STEPS: { title: string; body: string }[] = [
 
 export default function CondenserGuide() {
   return (
-    <div className="elev rounded-2xl bg-white p-5 ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-700/60">
+    <div className="card p-5">
       <div className="mb-4 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm font-medium text-emerald-900 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
         A dirty condenser is the most common and cheapest cause — fixing it costs nothing. Try this
         before buying any parts or calling anyone.
