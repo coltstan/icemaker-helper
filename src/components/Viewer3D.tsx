@@ -7,6 +7,7 @@ import {
   Lightformer,
   useProgress,
 } from '@react-three/drei'
+import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import IceMakerModel, { REGION_FOCUS } from './IceMakerModel'
@@ -61,6 +62,15 @@ function CameraRig({ region }: { region: string | null }) {
     } else {
       invalidate()
     }
+  })
+  return null
+}
+
+/** Keeps requesting frames while the showcase auto-rotate is active (demand mode). */
+function AutoSpin({ active }: { active: boolean }) {
+  const invalidate = useThree((s) => s.invalidate)
+  useFrame(() => {
+    if (active) invalidate()
   })
   return null
 }
@@ -313,6 +323,9 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
     onSelect(null)
   }
 
+  // Idle showcase: slowly spin until the user engages with a specific part/view.
+  const engaged = Boolean(selectedRegion) || doorOpen || exploded || arOpen
+
   return (
     <>
     <div className="elev-lg relative h-[58vh] w-full overflow-hidden rounded-3xl bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300 ring-1 ring-zinc-200/70 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/60 lg:h-[72vh]">
@@ -339,6 +352,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         <directionalLight position={[-5, 3, -3]} intensity={0.5} />
         <directionalLight position={[0, 2, 7]} intensity={0.4} />
         <RepaintOnVisible />
+        <AutoSpin active={!engaged} />
         <CameraRig region={selectedRegion} />
         <Suspense fallback={null}>
           <Studio />
@@ -365,11 +379,21 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
           enablePan={false}
           enableDamping
           dampingFactor={0.08}
+          autoRotate={!engaged}
+          autoRotateSpeed={0.5}
           minDistance={3}
           maxDistance={11}
           maxPolarAngle={Math.PI * 0.52}
           makeDefault
         />
+        <EffectComposer multisampling={4} enableNormalPass={false}>
+          <Bloom
+            intensity={0.55}
+            luminanceThreshold={0.85}
+            luminanceSmoothing={0.18}
+            mipmapBlur
+          />
+        </EffectComposer>
       </Canvas>
 
       <LoadingOverlay />

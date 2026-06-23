@@ -33,6 +33,7 @@ export default function App() {
   return (
     <div className="relative min-h-full bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="aurora" aria-hidden="true" />
+      <div className="grain" aria-hidden="true" />
 
       <header className="glass-bar sticky top-0 z-30">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
