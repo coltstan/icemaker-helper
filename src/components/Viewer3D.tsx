@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import {
   OrbitControls,
   ContactShadows,
@@ -9,8 +9,61 @@ import {
 } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
-import IceMakerModel from './IceMakerModel'
+import IceMakerModel, { REGION_FOCUS } from './IceMakerModel'
 import { SYSTEMS, SYSTEM_KEY } from '../data/systems'
+
+// Parts behind the door — selecting one auto-opens the door to reveal it.
+const INTERIOR_REGIONS = new Set([
+  'evaporator-plate',
+  'cutter-grid',
+  'distributor-tube',
+  'water-pan',
+  'water-pump',
+  'storage-bin',
+  'bin-temp-sensor',
+  'water-filter',
+])
+
+/** Smoothly flies the camera in to frame the selected part, then hands control
+ *  back to the user. No-op until a part is selected. */
+function CameraRig({ region }: { region: string | null }) {
+  const camera = useThree((s) => s.camera)
+  const controls = useThree((s) => s.controls) as OrbitControlsImpl | null
+  const invalidate = useThree((s) => s.invalidate)
+  const focusTarget = useRef(new THREE.Vector3())
+  const camDest = useRef(new THREE.Vector3())
+  const active = useRef(false)
+
+  useEffect(() => {
+    if (!controls || !region) return
+    const f = REGION_FOCUS[region]
+    if (!f) return
+    const focus = new THREE.Vector3(f[0], f[1] + 0.05, f[2])
+    const dir = new THREE.Vector3().subVectors(camera.position, controls.target)
+    if (dir.lengthSq() < 1e-4) dir.set(0.6, 0.4, 0.7)
+    dir.normalize()
+    focusTarget.current.copy(focus)
+    camDest.current.copy(focus).addScaledVector(dir, 3.6)
+    active.current = true
+    invalidate()
+  }, [region, controls, camera, invalidate])
+
+  useFrame(() => {
+    if (!active.current || !controls) return
+    controls.target.lerp(focusTarget.current, 0.1)
+    camera.position.lerp(camDest.current, 0.1)
+    controls.update()
+    if (
+      controls.target.distanceTo(focusTarget.current) < 0.02 &&
+      camera.position.distanceTo(camDest.current) < 0.02
+    ) {
+      active.current = false
+    } else {
+      invalidate()
+    }
+  })
+  return null
+}
 
 interface Viewer3DProps {
   selectedRegion: string | null
@@ -110,6 +163,18 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
   const [doorOpen, setDoorOpen] = useState(false)
   const [exploded, setExploded] = useState(false)
 
+  // Selecting an interior part auto-opens the door so it's actually visible.
+  useEffect(() => {
+    if (selectedRegion && INTERIOR_REGIONS.has(selectedRegion)) setDoorOpen(true)
+  }, [selectedRegion])
+
+  function resetView() {
+    controls.current?.reset()
+    setDoorOpen(false)
+    setExploded(false)
+    onSelect(null)
+  }
+
   return (
     <div className="relative h-[58vh] w-full overflow-hidden rounded-2xl bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300 ring-1 ring-zinc-200/70 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/60 lg:h-[72vh]">
       <Canvas
@@ -135,6 +200,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         <directionalLight position={[-5, 3, -3]} intensity={0.5} />
         <directionalLight position={[0, 2, 7]} intensity={0.4} />
         <RepaintOnVisible />
+        <CameraRig region={selectedRegion} />
         <Suspense fallback={null}>
           <Studio />
           <IceMakerModel
@@ -179,7 +245,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         </div>
         <button
           type="button"
-          onClick={() => controls.current?.reset()}
+          onClick={resetView}
           className="pointer-events-auto cursor-pointer rounded-lg bg-white/85 px-3 py-1.5 text-sm font-medium text-zinc-700 ring-1 ring-zinc-200 backdrop-blur transition-all duration-200 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:bg-zinc-800/80 dark:text-zinc-200 dark:ring-zinc-700 dark:hover:bg-zinc-800"
         >
           Reset view

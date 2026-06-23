@@ -5,7 +5,8 @@ import PartPanel from './components/PartPanel'
 import Wizard from './components/Wizard'
 import WarrantyCard from './components/WarrantyCard'
 import Assistant from './components/Assistant'
-import { MODEL_NUMBER, partsInRegion, partById, PARTS } from './data/parts'
+import { partsInRegion, partById, PARTS } from './data/parts'
+import { MODELS, useModel } from './data/modelContext'
 
 type Tab = 'explore' | 'solve' | 'ai'
 
@@ -30,7 +31,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-zinc-50 to-zinc-100 text-zinc-900 dark:from-zinc-950 dark:to-zinc-900 dark:text-zinc-100">
+    <div className="relative min-h-full bg-gradient-to-b from-zinc-50 to-zinc-100 text-zinc-900 dark:from-zinc-950 dark:to-zinc-900 dark:text-zinc-100">
+      <div className="aurora" aria-hidden="true" />
+
       <header className="sticky top-0 z-30 border-b-2 border-accent-600 bg-zinc-950/95 text-white backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -39,9 +42,7 @@ export default function App() {
               <h1 className="text-[15px] font-semibold uppercase leading-tight tracking-[0.18em]">
                 IceMaker Helper
               </h1>
-              <p className="text-xs text-zinc-400">
-                KitchenAid {MODEL_NUMBER} · 15" built-in ice maker
-              </p>
+              <ModelPicker />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -64,45 +65,47 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
-        {tab === 'explore' ? (
-          <div className="space-y-4">
-            <TipBanner onSolve={() => setTab('solve')} />
-            <div className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-              <div className="space-y-4">
-                <Viewer3D
-                  selectedRegion={selectedRegion}
-                  selectedName={selectedName}
-                  onSelect={selectRegion}
-                />
-                <div className="elev rounded-2xl bg-white p-4 ring-1 ring-zinc-200/70 dark:bg-zinc-900 dark:ring-zinc-700/60">
-                  <div className="mb-3 flex items-baseline justify-between">
-                    <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                      Parts list
-                    </h2>
-                    <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                      {purchasable} replaceable parts
-                    </span>
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-6">
+        <div key={tab} className="animate-up">
+          {tab === 'explore' ? (
+            <div className="space-y-4">
+              <TipBanner onSolve={() => setTab('solve')} />
+              <div className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
+                <div className="space-y-4">
+                  <Viewer3D
+                    selectedRegion={selectedRegion}
+                    selectedName={selectedName}
+                    onSelect={selectRegion}
+                  />
+                  <div className="elev rounded-2xl bg-white/90 p-4 ring-1 ring-zinc-200/70 backdrop-blur dark:bg-zinc-900/90 dark:ring-zinc-700/60">
+                    <div className="mb-3 flex items-baseline justify-between">
+                      <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                        Parts list
+                      </h2>
+                      <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                        {purchasable} replaceable parts
+                      </span>
+                    </div>
+                    <PartsList selectedId={selectedId} onSelect={setSelectedId} />
                   </div>
-                  <PartsList selectedId={selectedId} onSelect={setSelectedId} />
                 </div>
+                {/* Right column on desktop; bottom sheet on mobile. */}
+                <PartPanel selectedId={selectedId} onSelect={setSelectedId} />
               </div>
-              {/* Right column on desktop; bottom sheet on mobile. */}
-              <PartPanel selectedId={selectedId} onSelect={setSelectedId} />
             </div>
-          </div>
-        ) : tab === 'solve' ? (
-          <Wizard />
-        ) : (
-          <Assistant />
-        )}
+          ) : tab === 'solve' ? (
+            <Wizard />
+          ) : (
+            <Assistant />
+          )}
+        </div>
 
         <div className="mt-6">
           <WarrantyCard />
         </div>
       </main>
 
-      <footer className="border-t border-zinc-200 dark:border-zinc-800">
+      <footer className="relative z-10 border-t border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-zinc-500 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl">
             Stylised reference model — not to exact scale. Confirm fitment with your model number
@@ -127,6 +130,28 @@ export default function App() {
         </div>
       </footer>
     </div>
+  )
+}
+
+function ModelPicker() {
+  const { model, setModelId } = useModel()
+  return (
+    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-400">
+      <span>KitchenAid</span>
+      <select
+        value={model.id}
+        onChange={(e) => setModelId(e.target.value)}
+        aria-label="Select model"
+        className="cursor-pointer rounded-md bg-zinc-900 px-1.5 py-0.5 font-medium text-zinc-100 ring-1 ring-zinc-700 transition-colors hover:ring-accent-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+      >
+        {MODELS.map((m) => (
+          <option key={m.id} value={m.id} className="bg-zinc-900 text-zinc-100">
+            {m.name}
+          </option>
+        ))}
+      </select>
+      <span className="hidden sm:inline">· 15" built-in ice maker</span>
+    </p>
   )
 }
 
@@ -167,7 +192,7 @@ function ThemeToggle() {
 
 function TipBanner({ onSolve }: { onSolve: () => void }) {
   return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-accent-200 bg-accent-50 px-4 py-3 text-sm dark:border-accent-900 dark:bg-accent-950/30 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2 rounded-2xl border border-accent-200 bg-accent-50/80 px-4 py-3 text-sm backdrop-blur dark:border-accent-900 dark:bg-accent-950/30 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-zinc-700 dark:text-zinc-200">
         <span className="font-semibold text-accent-700 dark:text-accent-300">Not making ice?</span>{' '}
         The most common cause is a dirty condenser — and cleaning it is free. Start with the guided

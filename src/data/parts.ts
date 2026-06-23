@@ -11,12 +11,13 @@ import type { Part, PartGroup } from './types'
 export const MODEL_NUMBER = 'KUIX505ESS2'
 export const MODEL_URL = `https://www.partselect.com/Models/${MODEL_NUMBER}/`
 
-/** PartSelect search by part/model number resolves reliably to the part page. */
-export function partUrl(part: Part): string {
+/** PartSelect search by part/model number resolves reliably to the part page.
+ *  Pass the currently-selected model's URL so model-page fallbacks track the picker. */
+export function partUrl(part: Part, fallbackModelUrl: string = MODEL_URL): string {
   if (part.partNumber) {
     return `https://www.partselect.com/Search/?SearchTerm=${encodeURIComponent(part.partNumber)}`
   }
-  return MODEL_URL
+  return fallbackModelUrl
 }
 
 export const GROUP_LABELS: Record<PartGroup, string> = {

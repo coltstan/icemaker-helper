@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { partById, partsInRegion, partUrl, MODEL_URL } from '../data/parts'
+import { partById, partsInRegion, partUrl } from '../data/parts'
 import { SYSTEMS } from '../data/systems'
+import { useModel } from '../data/modelContext'
 import type { Part } from '../data/types'
 
 interface PartPanelProps {
@@ -49,6 +50,7 @@ function EmptyState() {
 function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | null) => void }) {
   const siblings = partsInRegion(part.region).filter((p) => p.id !== part.id)
   const system = SYSTEMS[part.group]
+  const { url: modelPageUrl } = useModel()
   const [copied, setCopied] = useState(false)
 
   function copyNumber() {
@@ -131,7 +133,7 @@ function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | nu
 
       {!part.infoOnly && (
         <a
-          href={partUrl(part)}
+          href={partUrl(part, modelPageUrl)}
           target="_blank"
           rel="noopener noreferrer"
           className="block cursor-pointer rounded-lg bg-accent-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors duration-200 hover:bg-accent-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900"
@@ -143,7 +145,7 @@ function PartDetail({ part, onSelect }: { part: Part; onSelect: (id: string | nu
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
         On PartSelect look under the “{part.modelSection}” section.{' '}
         <a
-          href={MODEL_URL}
+          href={modelPageUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="cursor-pointer text-accent-700 underline hover:text-accent-800 dark:text-accent-400"

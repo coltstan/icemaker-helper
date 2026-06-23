@@ -1,7 +1,41 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useCursor, RoundedBox } from '@react-three/drei'
+import { useCursor, RoundedBox, Html } from '@react-three/drei'
 import * as THREE from 'three'
+
+// Short labels shown on each part in exploded view, and approximate world
+// positions used by the camera to frame a selected part (see Viewer3D).
+export const REGION_LABELS: Record<string, string> = {
+  condenser: 'Condenser coil',
+  'condenser-fan': 'Condenser fan',
+  compressor: 'Compressor',
+  'evaporator-plate': 'Evaporator',
+  'cutter-grid': 'Cutter grid',
+  'distributor-tube': 'Fill / distributor',
+  'water-pan': 'Water pan',
+  'water-pump': 'Water pump',
+  'storage-bin': 'Storage bin',
+  'bin-temp-sensor': 'Bin sensor',
+  'water-filter': 'Water filter',
+  'control-board': 'Control board',
+  'water-inlet-valve': 'Inlet valve',
+}
+
+export const REGION_FOCUS: Record<string, [number, number, number]> = {
+  condenser: [0, 1.39, 0.16],
+  'condenser-fan': [-0.36, 1.35, -0.55],
+  compressor: [0.42, 1.23, -0.72],
+  'evaporator-plate': [0, 0.71, -0.4],
+  'cutter-grid': [0, 0.51, -0.4],
+  'distributor-tube': [-0.34, 0.53, -0.62],
+  'water-pan': [-0.3, 0.1, -0.6],
+  'water-pump': [0.32, 0.13, -0.6],
+  'storage-bin': [0, -1.07, 0.05],
+  'bin-temp-sensor': [0.54, 0.27, -0.5],
+  'water-filter': [0.46, 1.05, 0.78],
+  'control-board': [-0.42, 1.21, -1.05],
+  'water-inlet-valve': [0.32, -1.4, -1.18],
+}
 
 // ---------------------------------------------------------------------------
 // Stylised but high-fidelity representation of the KUIX505ESS2 15" ice maker,
@@ -71,6 +105,7 @@ interface SelectableProps {
   explodeTo?: Vec3
   explodeRef: React.MutableRefObject<number>
   selectedRegion: string | null
+  exploded: boolean
   onSelect: (region: string | null) => void
   children: (highlighted: boolean) => ReactNode
 }
@@ -81,6 +116,7 @@ function Selectable({
   explodeTo,
   explodeRef,
   selectedRegion,
+  exploded,
   onSelect,
   children,
 }: SelectableProps) {
@@ -116,6 +152,19 @@ function Selectable({
       onPointerOut={() => setHovered(false)}
     >
       {children(isSelected || hovered)}
+      {exploded && REGION_LABELS[id] && (
+        <Html center distanceFactor={9} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+          <div
+            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow ring-1 ${
+              isSelected
+                ? 'bg-accent-600 text-white ring-white/20'
+                : 'bg-zinc-900/90 text-white ring-white/10'
+            }`}
+          >
+            {REGION_LABELS[id]}
+          </div>
+        </Html>
+      )}
     </group>
   )
 }
@@ -158,7 +207,7 @@ export default function IceMakerModel({
     if (animating) invalidate()
   })
 
-  const sel = { explodeRef, selectedRegion, onSelect }
+  const sel = { explodeRef, selectedRegion, exploded, onSelect }
 
   return (
     <group position={[0, 0.05, 0]}>

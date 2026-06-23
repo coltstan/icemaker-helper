@@ -54,3 +54,99 @@ canvas {
     0 1px 2px rgb(0 0 0 / 0.4),
     0 12px 32px -16px rgb(0 0 0 / 0.6);
 }
+
+/* Premium ring + lift on hover for the hero viewer / cards. */
+.elev-lg {
+  box-shadow:
+    0 2px 4px rgb(15 23 42 / 0.05),
+    0 24px 48px -20px rgb(15 23 42 / 0.25);
+}
+.dark .elev-lg {
+  box-shadow:
+    0 2px 8px rgb(0 0 0 / 0.5),
+    0 32px 64px -24px rgb(0 0 0 / 0.7);
+}
+
+/* ---- Motion ---- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade {
+  animation: fade-in 0.4s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-up,
+  .animate-fade,
+  .aurora::before,
+  .aurora::after {
+    animation: none !important;
+  }
+}
+
+/* ---- Ambient aurora backdrop (fixed, behind everything) ---- */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  width: 65vw;
+  height: 65vw;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+.aurora::before {
+  top: -18vw;
+  right: -10vw;
+  background: radial-gradient(circle at center, rgb(200 16 46 / 0.28), transparent 62%);
+  animation: drift-a 22s ease-in-out infinite alternate;
+}
+.aurora::after {
+  bottom: -22vw;
+  left: -12vw;
+  background: radial-gradient(circle at center, rgb(80 120 200 / 0.22), transparent 62%);
+  animation: drift-b 26s ease-in-out infinite alternate;
+}
+.dark .aurora::before {
+  opacity: 0.38;
+}
+.dark .aurora::after {
+  opacity: 0.32;
+}
+@keyframes drift-a {
+  to {
+    transform: translate3d(-6vw, 6vw, 0) scale(1.12);
+  }
+}
+@keyframes drift-b {
+  to {
+    transform: translate3d(8vw, -5vw, 0) scale(1.1);
+  }
+}

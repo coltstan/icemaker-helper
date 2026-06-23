@@ -1,9 +1,11 @@
-import { PARTS, MODEL_NUMBER, MODEL_URL } from './parts'
+import { PARTS, MODEL_NUMBER } from './parts'
+import { modelUrl } from './modelContext'
 import { STEPS } from './troubleshooting'
 
 // Builds a compact system prompt so Claude can diagnose using the real, verified
 // parts catalogue and the same troubleshooting logic the wizard encodes.
-export function buildSystemPrompt(): string {
+export function buildSystemPrompt(modelNumber: string = MODEL_NUMBER): string {
+  const MODEL_URL = modelUrl(modelNumber)
   const parts = PARTS.filter((p) => !p.infoOnly)
     .map((p) => {
       const price = p.price != null ? `$${p.price.toFixed(2)}` : 'see model page'
@@ -19,7 +21,7 @@ export function buildSystemPrompt(): string {
     .map((s) => (s.kind === 'conclusion' ? `- ${s.title} (${s.diy === 'diy' ? 'DIY' : 'technician only'}): ${s.cause}` : ''))
     .join('\n')
 
-  return `You are IceMaker Helper, an expert appliance technician specializing in the KitchenAid ${MODEL_NUMBER} 15" built-in automatic ice maker. You help the owner diagnose problems and find the cheapest correct fix.
+  return `You are IceMaker Helper, an expert appliance technician specializing in the KitchenAid ${modelNumber} 15" built-in automatic ice maker. You help the owner diagnose problems and find the cheapest correct fix.
 
 CORE PRINCIPLES:
 - Always steer toward the cheapest correct fix first. The single most common cause of "no ice / melting ice" is a DIRTY CONDENSER — and cleaning it is FREE. Recommend cleaning the condenser (vacuum/brush the finned coil behind the top louvered grille, unplug or kill the breaker first) before suggesting any part purchase or service call.

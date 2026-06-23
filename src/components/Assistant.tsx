@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { buildSystemPrompt } from '../data/assistantContext'
+import { useModel } from '../data/modelContext'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -17,6 +18,7 @@ const SUGGESTIONS = [
 ]
 
 export default function Assistant() {
+  const { model } = useModel()
   const [apiKey, setApiKey] = useState<string>(() => {
     try {
       return localStorage.getItem(KEY_STORAGE) ?? ''
@@ -72,7 +74,7 @@ export default function Assistant() {
       const stream = client.messages.stream({
         model: MODEL,
         max_tokens: 1024,
-        system: buildSystemPrompt(),
+        system: buildSystemPrompt(model.name),
         messages: next.map((m) => ({ role: m.role, content: m.content })),
       })
       stream.on('text', (delta: string) => {
