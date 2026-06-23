@@ -158,10 +158,148 @@ function LoadingOverlay() {
   )
 }
 
+// Load the <model-viewer> web component from its CDN on demand. It bundles its
+// own copy of three, so this avoids a version clash with the app's three.
+let modelViewerPromise: Promise<void> | null = null
+function loadModelViewer(): Promise<void> {
+  if (typeof customElements !== 'undefined' && customElements.get('model-viewer')) {
+    return Promise.resolve()
+  }
+  if (modelViewerPromise) return modelViewerPromise
+  modelViewerPromise = new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.type = 'module'
+    script.src = 'https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js'
+    script.onload = () => customElements.whenDefined('model-viewer').then(() => resolve())
+    script.onerror = () => {
+      modelViewerPromise = null
+      reject(new Error('Could not load the AR viewer — check your connection.'))
+    }
+    document.head.appendChild(script)
+  })
+  return modelViewerPromise
+}
+
+/** Exports the live model to GLB (+ USDZ for iOS) and shows it in <model-viewer>,
+ *  which provides native "View in AR" on phones (Scene Viewer / WebXR / Quick Look). */
+function ArModal({ object, onClose }: { object: THREE.Object3D | null; onClose: () => void }) {
+  const [glb, setGlb] = useState<string | null>(null)
+  const [usdz, setUsdz] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let glbUrl: string | undefined
+    let usdzUrl: string | undefined
+    let cancelled = false
+    ;(async () => {
+      try {
+        if (!object) throw new Error('Model is still loading — close this and try again.')
+        await loadModelViewer()
+        const [{ GLTFExporter }, { USDZExporter }] = await Promise.all([
+          import('three/examples/jsm/exporters/GLTFExporter.js'),
+          import('three/examples/jsm/exporters/USDZExporter.js'),
+        ])
+        const glbBuf = await new Promise<ArrayBuffer>((resolve, reject) =>
+          new GLTFExporter().parse(
+            object,
+            (r) => resolve(r as ArrayBuffer),
+            (e) => reject(e),
+            { binary: true },
+          ),
+        )
+        if (cancelled) return
+        glbUrl = URL.createObjectURL(new Blob([glbBuf], { type: 'model/gltf-binary' }))
+        setGlb(glbUrl)
+        try {
+          // USDZExporter exposes parseAsync in some versions, parse in others.
+          const exporter = new USDZExporter() as unknown as {
+            parseAsync?: (o: THREE.Object3D) => Promise<Uint8Array>
+            parse: (o: THREE.Object3D) => Promise<Uint8Array>
+          }
+          const usdzArr = await (exporter.parseAsync
+            ? exporter.parseAsync(object)
+            : exporter.parse(object))
+          if (cancelled) return
+          usdzUrl = URL.createObjectURL(new Blob([usdzArr as BlobPart], { type: 'model/vnd.usdz+zip' }))
+          setUsdz(usdzUrl)
+        } catch {
+          /* iOS Quick Look export unavailable — Android/WebXR still work via GLB */
+        }
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
+      }
+    })()
+    return () => {
+      cancelled = true
+      if (glbUrl) URL.revokeObjectURL(glbUrl)
+      if (usdzUrl) URL.revokeObjectURL(usdzUrl)
+    }
+  }, [object])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="View in your space"
+      onClick={onClose}
+    >
+      <div
+        className="card relative flex h-[80vh] w-full max-w-2xl flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-zinc-200/70 px-4 py-3 dark:border-zinc-700/60">
+          <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+            View in your space
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="cursor-pointer rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="relative flex-1">
+          {error ? (
+            <div className="grid h-full place-items-center p-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {error}
+            </div>
+          ) : glb ? (
+            <model-viewer
+              src={glb}
+              ios-src={usdz ?? undefined}
+              ar
+              ar-modes="webxr scene-viewer quick-look"
+              camera-controls
+              auto-rotate
+              shadow-intensity="1"
+              exposure="1"
+              style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-accent-600" />
+              Preparing 3D model…
+            </div>
+          )}
+        </div>
+        <p className="border-t border-zinc-200/70 px-4 py-2.5 text-center text-xs text-zinc-500 dark:border-zinc-700/60 dark:text-zinc-400">
+          On a phone, tap the <span className="font-medium">AR</span> button to place it in your
+          room. Drag to rotate here.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Viewer3DProps) {
   const controls = useRef<OrbitControlsImpl>(null)
+  const modelRef = useRef<THREE.Group>(null)
   const [doorOpen, setDoorOpen] = useState(false)
   const [exploded, setExploded] = useState(false)
+  const [arOpen, setArOpen] = useState(false)
 
   // Selecting an interior part auto-opens the door so it's actually visible.
   useEffect(() => {
@@ -176,6 +314,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
   }
 
   return (
+    <>
     <div className="elev-lg relative h-[58vh] w-full overflow-hidden rounded-3xl bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300 ring-1 ring-zinc-200/70 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/60 lg:h-[72vh]">
       <Canvas
         shadows
@@ -203,13 +342,15 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         <CameraRig region={selectedRegion} />
         <Suspense fallback={null}>
           <Studio />
+        </Suspense>
+        <group ref={modelRef}>
           <IceMakerModel
             selectedRegion={selectedRegion}
             onSelect={onSelect}
             doorOpen={doorOpen}
             exploded={exploded}
           />
-        </Suspense>
+        </group>
         <ContactShadows
           position={[0, -1.78, 0]}
           opacity={0.45}
@@ -242,6 +383,17 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
           <Toggle pressed={exploded} onClick={() => setExploded((v) => !v)}>
             Exploded view
           </Toggle>
+          <button
+            type="button"
+            onClick={() => setArOpen(true)}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-white/85 px-3 py-1.5 text-sm font-medium text-zinc-700 ring-1 ring-zinc-200 backdrop-blur transition-all duration-200 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:bg-zinc-800/80 dark:text-zinc-200 dark:ring-zinc-700 dark:hover:bg-zinc-800"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3 4 7v10l8 4 8-4V7z" />
+              <path d="M4 7l8 4 8-4M12 11v10" />
+            </svg>
+            View in AR
+          </button>
         </div>
         <button
           type="button"
@@ -274,6 +426,8 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
           Drag to rotate · scroll / pinch to zoom · tap a part for details
         </p>
       )}
-    </div>
+      </div>
+      {arOpen && <ArModal object={modelRef.current} onClose={() => setArOpen(false)} />}
+    </>
   )
 }

@@ -246,6 +246,18 @@ export default function IceMakerModel({
           <boxGeometry args={[W - 0.06, 0.18, 0.04]} />
           <meshStandardMaterial color="#24272b" metalness={0.4} roughness={0.7} />
         </mesh>
+        {/* leveling feet */}
+        {[
+          [-W / 2 + 0.16, D / 2 - 0.18],
+          [W / 2 - 0.16, D / 2 - 0.18],
+          [-W / 2 + 0.16, -D / 2 + 0.18],
+          [W / 2 - 0.16, -D / 2 + 0.18],
+        ].map((p, i) => (
+          <mesh key={`foot${i}`} position={[p[0], -H / 2 - 0.035, p[1]]} castShadow>
+            <cylinderGeometry args={[0.05, 0.062, 0.07, 18]} />
+            <Mat preset="blackPlastic" hl={false} />
+          </mesh>
+        ))}
 
         {/* White interior liner (open box) — matches the photos */}
         <group>
@@ -284,10 +296,22 @@ export default function IceMakerModel({
           <meshStandardMaterial color="#141719" metalness={0.3} roughness={0.85} />
         </mesh>
         {/* angled satin louvers */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <mesh key={i} position={[0, 0.15 - i * 0.058, 0.01]} rotation={[-0.5, 0, 0]} castShadow>
-            <boxGeometry args={[W - 0.15, 0.045, 0.018]} />
+        {Array.from({ length: 9 }).map((_, i) => (
+          <mesh key={i} position={[0, 0.185 - i * 0.044, 0.01]} rotation={[-0.5, 0, 0]} castShadow>
+            <boxGeometry args={[W - 0.15, 0.03, 0.016]} />
             <Mat preset="stainless" hl={false} />
+          </mesh>
+        ))}
+        {/* corner screws */}
+        {[
+          [-(W / 2) + 0.09, 0.19],
+          [W / 2 - 0.09, 0.19],
+          [-(W / 2) + 0.09, -0.19],
+          [W / 2 - 0.09, -0.19],
+        ].map((p, i) => (
+          <mesh key={`vs${i}`} position={[p[0], p[1], 0.02]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.02, 12]} />
+            <Mat preset="darkMetal" hl={false} />
           </mesh>
         ))}
       </group>
@@ -389,16 +413,16 @@ export default function IceMakerModel({
               <Mat preset="stainlessDark" hl={hl} />
             </mesh>
             {/* row of round mold cups on the underside */}
-            {Array.from({ length: 5 }).map((_, i) => (
-              <mesh key={i} position={[-0.36 + i * 0.18, -0.13, 0.0]}>
-                <cylinderGeometry args={[0.072, 0.072, 0.12, 24]} />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <mesh key={i} position={[-0.4 + i * 0.16, -0.13, 0.0]}>
+                <cylinderGeometry args={[0.062, 0.062, 0.12, 28]} />
                 <Mat preset="chrome" hl={hl} />
               </mesh>
             ))}
             {/* harvest finger slots on the front face */}
-            {Array.from({ length: 5 }).map((_, i) => (
-              <mesh key={`f${i}`} position={[-0.36 + i * 0.18, 0.0, 0.31]}>
-                <boxGeometry args={[0.055, 0.06, 0.02]} />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <mesh key={`f${i}`} position={[-0.4 + i * 0.16, 0.0, 0.31]}>
+                <boxGeometry args={[0.05, 0.06, 0.02]} />
                 <Mat preset="blackPlastic" hl={hl} />
               </mesh>
             ))}
