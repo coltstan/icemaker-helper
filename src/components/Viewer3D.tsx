@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Component, Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import {
   OrbitControls,
@@ -11,7 +11,19 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import IceMakerModel, { REGION_FOCUS } from './IceMakerModel'
+import GltfModel from './GltfModel'
 import { SYSTEMS, SYSTEM_KEY } from '../data/systems'
+
+// Falls back to the procedural model if a dropped-in GLB fails to load.
+class ModelErrorBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
+}
 
 // Parts behind the door — selecting one auto-opens the door to reveal it.
 const INTERIOR_REGIONS = new Set([
@@ -310,6 +322,22 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
   const [doorOpen, setDoorOpen] = useState(false)
   const [exploded, setExploded] = useState(false)
   const [arOpen, setArOpen] = useState(false)
+  const [glbUrl, setGlbUrl] = useState<string | null>(null)
+
+  // Use a real model if one is present at public/model/icemaker.glb; otherwise
+  // fall back to the procedural model (no 404 noise — we HEAD-check first).
+  useEffect(() => {
+    const url = `${import.meta.env.BASE_URL}model/icemaker.glb`
+    let alive = true
+    fetch(url, { method: 'HEAD' })
+      .then((r) => {
+        if (alive && r.ok) setGlbUrl(url)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [])
 
   // Selecting an interior part auto-opens the door so it's actually visible.
   useEffect(() => {
@@ -365,12 +393,29 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
           <Studio />
         </Suspense>
         <group ref={modelRef}>
-          <IceMakerModel
-            selectedRegion={selectedRegion}
-            onSelect={onSelect}
-            doorOpen={doorOpen}
-            exploded={exploded}
-          />
+          {glbUrl ? (
+            <ModelErrorBoundary
+              fallback={
+                <IceMakerModel
+                  selectedRegion={selectedRegion}
+                  onSelect={onSelect}
+                  doorOpen={doorOpen}
+                  exploded={exploded}
+                />
+              }
+            >
+              <Suspense fallback={null}>
+                <GltfModel url={glbUrl} scale={3.4} />
+              </Suspense>
+            </ModelErrorBoundary>
+          ) : (
+            <IceMakerModel
+              selectedRegion={selectedRegion}
+              onSelect={onSelect}
+              doorOpen={doorOpen}
+              exploded={exploded}
+            />
+          )}
         </group>
         <ContactShadows
           position={[0, -1.8, 0]}
