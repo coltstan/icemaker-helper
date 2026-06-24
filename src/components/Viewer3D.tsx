@@ -494,17 +494,13 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         ))}
       </div>
 
-      {/* Selected-part caption / hint */}
-      {selectedName ? (
+      {/* Selected-part caption */}
+      {selectedName && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-3">
           <span className="rounded-full bg-accent-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
             {selectedName}
           </span>
         </div>
-      ) : (
-        <p className="pointer-events-none absolute inset-x-0 bottom-0 hidden p-3 text-center text-xs font-medium text-zinc-500/90 dark:text-zinc-400/90 lg:block">
-          Drag to rotate · scroll / pinch to zoom · tap a part for details
-        </p>
       )}
       </div>
       {arOpen && <ArModal object={modelRef.current} onClose={() => setArOpen(false)} />}
