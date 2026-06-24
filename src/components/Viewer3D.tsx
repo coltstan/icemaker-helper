@@ -331,7 +331,10 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
     let alive = true
     fetch(url, { method: 'HEAD' })
       .then((r) => {
-        if (alive && r.ok) setGlbUrl(url)
+        // Only treat it as a model if the host actually serves a file — dev
+        // servers / SPA hosts answer missing paths with an HTML 200 fallback.
+        const ct = r.headers.get('content-type') || ''
+        if (alive && r.ok && !ct.includes('text/html')) setGlbUrl(url)
       })
       .catch(() => {})
     return () => {
