@@ -388,7 +388,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         <directionalLight position={[0, 2, 7]} intensity={0.45} />
         <RepaintOnVisible />
         <AutoSpin active={!engaged} />
-        <CameraRig region={selectedRegion} />
+        <CameraRig region={glbUrl ? null : selectedRegion} />
         <Suspense fallback={null}>
           <Studio />
         </Suspense>
@@ -405,7 +405,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
               }
             >
               <Suspense fallback={null}>
-                <GltfModel url={glbUrl} scale={3.4} />
+                <GltfModel url={glbUrl} targetHeight={3.4} />
               </Suspense>
             </ModelErrorBoundary>
           ) : (
@@ -453,12 +453,16 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
       {/* Control bar */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-center justify-between gap-2 p-3">
         <div className="pointer-events-auto flex flex-wrap gap-2">
-          <Toggle pressed={doorOpen} onClick={() => setDoorOpen((v) => !v)}>
-            {doorOpen ? 'Close door' : 'Open door'}
-          </Toggle>
-          <Toggle pressed={exploded} onClick={() => setExploded((v) => !v)}>
-            Exploded view
-          </Toggle>
+          {!glbUrl && (
+            <>
+              <Toggle pressed={doorOpen} onClick={() => setDoorOpen((v) => !v)}>
+                {doorOpen ? 'Close door' : 'Open door'}
+              </Toggle>
+              <Toggle pressed={exploded} onClick={() => setExploded((v) => !v)}>
+                Exploded view
+              </Toggle>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setArOpen(true)}
