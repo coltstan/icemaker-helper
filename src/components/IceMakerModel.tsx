@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useCursor, RoundedBox, Html } from '@react-three/drei'
 import * as THREE from 'three'
+import { brushedMetalMaps } from '../lib/brushedMetal'
 
 // Short labels shown on each part in exploded view, and approximate world
 // positions used by the camera to frame a selected part (see Viewer3D).
@@ -89,10 +90,21 @@ const PRESETS = {
 
 type Preset = keyof typeof PRESETS
 
+// Large flat stainless surfaces get the brushed grain; small detail parts
+// (chrome, wire, copper) stay clean so the finish reads as deliberate.
+const BRUSHED_PRESETS = new Set<Preset>(['stainless', 'stainlessDark', 'steel'])
+const BRUSHED_NORMAL_SCALE = new THREE.Vector2(0.14, 0.14)
+
 function Mat({ preset, hl }: { preset: Preset; hl: boolean }) {
+  const maps = BRUSHED_PRESETS.has(preset) ? brushedMetalMaps() : null
   return (
     <meshStandardMaterial
       {...PRESETS[preset]}
+      {...(maps && {
+        roughnessMap: maps.roughnessMap,
+        normalMap: maps.normalMap,
+        normalScale: BRUSHED_NORMAL_SCALE,
+      })}
       emissive={hl ? ACCENT : '#000000'}
       emissiveIntensity={hl ? 0.45 : 0}
     />
@@ -209,21 +221,18 @@ export default function IceMakerModel({
 
   return (
     <group position={[0, 0.05, 0]}>
-      {/* ===== Cabinet shell (open front; thin stainless panels) ===== */}
+      {/* ===== Cabinet shell (open front; eased-edge stainless panels) ===== */}
       <group>
-        {/* back, sides, top, bottom */}
-        <mesh position={[0, 0, -D / 2]} castShadow receiveShadow>
-          <boxGeometry args={[W, H, WALL]} />
+        {/* back, sides, top, bottom — rounded edges so corners catch light */}
+        <RoundedBox args={[W, H, WALL]} radius={0.02} smoothness={4} position={[0, 0, -D / 2]} castShadow receiveShadow>
           <Mat preset="stainlessDark" hl={false} />
-        </mesh>
-        <mesh position={[-W / 2, 0, 0]} castShadow receiveShadow>
-          <boxGeometry args={[WALL, H, D]} />
+        </RoundedBox>
+        <RoundedBox args={[WALL, H, D]} radius={0.02} smoothness={4} position={[-W / 2, 0, 0]} castShadow receiveShadow>
           <Mat preset="stainless" hl={false} />
-        </mesh>
-        <mesh position={[W / 2, 0, 0]} castShadow receiveShadow>
-          <boxGeometry args={[WALL, H, D]} />
+        </RoundedBox>
+        <RoundedBox args={[WALL, H, D]} radius={0.02} smoothness={4} position={[W / 2, 0, 0]} castShadow receiveShadow>
           <Mat preset="stainless" hl={false} />
-        </mesh>
+        </RoundedBox>
         {/* eased stainless top cap (slight overhang, rounded edges) */}
         <RoundedBox
           args={[W + 0.03, 0.09, D + 0.03]}
@@ -235,10 +244,9 @@ export default function IceMakerModel({
         >
           <Mat preset="stainless" hl={false} />
         </RoundedBox>
-        <mesh position={[0, -H / 2, 0]} receiveShadow>
-          <boxGeometry args={[W, WALL, D]} />
+        <RoundedBox args={[W, WALL, D]} radius={0.018} smoothness={4} position={[0, -H / 2, 0]} receiveShadow>
           <Mat preset="stainlessDark" hl={false} />
-        </mesh>
+        </RoundedBox>
         {/* recessed toe kick across the front bottom */}
         <mesh position={[0, -H / 2 + 0.09, D / 2 - 0.05]}>
           <boxGeometry args={[W - 0.06, 0.18, 0.04]} />
@@ -609,11 +617,17 @@ export default function IceMakerModel({
           position={[W / 2, 0, 0.045]}
           castShadow
         >
-          {/* PrintShield satin stainless with a soft clearcoat sheen */}
+          {/* PrintShield satin stainless: brushed grain + directional sheen
+              from anisotropy, under a soft clearcoat */}
           <meshPhysicalMaterial
             color="#c6cbcf"
             metalness={1}
             roughness={0.5}
+            roughnessMap={brushedMetalMaps().roughnessMap}
+            normalMap={brushedMetalMaps().normalMap}
+            normalScale={BRUSHED_NORMAL_SCALE}
+            anisotropy={0.55}
+            anisotropyRotation={Math.PI / 2}
             clearcoat={0.55}
             clearcoatRoughness={0.4}
             envMapIntensity={0.9}

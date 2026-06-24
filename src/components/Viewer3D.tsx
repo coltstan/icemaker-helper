@@ -122,7 +122,7 @@ function Toggle({
  *  (no network HDR download), gives the stainless its soft reflections. */
 function Studio() {
   return (
-    <Environment resolution={256} frames={1}>
+    <Environment resolution={384} frames={1}>
       <Lightformer intensity={3} position={[0, 5, -2]} scale={[14, 7, 1]} color="#ffffff" />
       <Lightformer intensity={1.6} position={[0, 1, 6]} scale={[14, 9, 1]} color="#eef3fb" />
       <Lightformer
@@ -376,16 +376,20 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         aria-label="Interactive 3D model of the KUIX505ESS2 ice maker. Drag to rotate, scroll or pinch to zoom, and tap a part to see details."
         onPointerMissed={() => onSelect(null)}
       >
-        <ambientLight intensity={0.4} />
+        <ambientLight intensity={0.38} />
+        {/* Warm key */}
         <directionalLight
           position={[5, 8, 4]}
-          intensity={1.9}
+          intensity={1.85}
+          color="#fff4e8"
           castShadow
           shadow-mapSize={[2048, 2048]}
           shadow-bias={-0.0002}
         />
-        <directionalLight position={[-6, 3, -3]} intensity={0.55} />
+        {/* Cool fill + a cool rim from behind to carve the top/side edges */}
+        <directionalLight position={[-6, 3, -3]} intensity={0.5} color="#eef3fb" />
         <directionalLight position={[0, 2, 7]} intensity={0.45} />
+        <directionalLight position={[-4, 6, -6]} intensity={0.9} color="#cfe0ff" />
         <RepaintOnVisible />
         <AutoSpin active={!engaged} />
         <CameraRig region={glbUrl ? null : selectedRegion} />
@@ -419,9 +423,9 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         </group>
         <ContactShadows
           position={[0, -1.8, 0]}
-          opacity={0.62}
+          opacity={0.68}
           scale={6.5}
-          blur={2.2}
+          blur={2.6}
           far={4.5}
           resolution={1024}
           color="#000000"
