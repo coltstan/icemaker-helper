@@ -14,11 +14,18 @@ import IceMakerModel, { REGION_FOCUS } from './IceMakerModel'
 import GltfModel from './GltfModel'
 import { SYSTEMS, SYSTEM_KEY } from '../data/systems'
 
-// Falls back to the procedural model if a dropped-in GLB fails to load.
-class ModelErrorBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+// Falls back to the procedural model if a dropped-in GLB fails to load, and
+// notifies the parent so it can re-enable the procedural-only controls.
+class ModelErrorBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode; onError?: () => void },
+  { failed: boolean }
+> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
+  }
+  componentDidCatch() {
+    this.props.onError?.()
   }
   render() {
     return this.state.failed ? this.props.fallback : this.props.children
@@ -323,6 +330,11 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
   const [exploded, setExploded] = useState(false)
   const [arOpen, setArOpen] = useState(false)
   const [glbUrl, setGlbUrl] = useState<string | null>(null)
+  const [glbFailed, setGlbFailed] = useState(false)
+
+  // The procedural model is what's actually on screen unless a real GLB both
+  // exists AND loaded — so its door/exploded controls follow this, not glbUrl.
+  const proceduralActive = !glbUrl || glbFailed
 
   // Use a real model if one is present at public/model/icemaker.glb; otherwise
   // fall back to the procedural model (no 404 noise — we HEAD-check first).
@@ -395,13 +407,14 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
         <directionalLight position={[-4, 6, -6]} intensity={0.9} color="#cfe0ff" />
         <RepaintOnVisible />
         <AutoSpin active={!engaged} />
-        <CameraRig region={glbUrl ? null : selectedRegion} />
+        <CameraRig region={proceduralActive ? selectedRegion : null} />
         <Suspense fallback={null}>
           <Studio />
         </Suspense>
         <group ref={modelRef}>
-          {glbUrl ? (
+          {glbUrl && !glbFailed ? (
             <ModelErrorBoundary
+              onError={() => setGlbFailed(true)}
               fallback={
                 <IceMakerModel
                   selectedRegion={selectedRegion}
@@ -460,7 +473,7 @@ export default function Viewer3D({ selectedRegion, selectedName, onSelect }: Vie
       {/* Control bar */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-center justify-between gap-2 p-3">
         <div className="pointer-events-auto flex flex-wrap gap-2">
-          {!glbUrl && (
+          {proceduralActive && (
             <>
               <Toggle pressed={doorOpen} onClick={() => setDoorOpen((v) => !v)}>
                 {doorOpen ? 'Close door' : 'Open door'}

@@ -162,15 +162,12 @@ function Selectable({
       onPointerOut={() => setHovered(false)}
     >
       {children(isSelected || hovered)}
-      {(hovered || isSelected) && REGION_LABELS[id] && (
-        <Html center distanceFactor={8} zIndexRange={[30, 0]} style={{ pointerEvents: 'none' }}>
-          <div
-            className={`-translate-y-3 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-lg ring-1 backdrop-blur ${
-              isSelected
-                ? 'bg-accent-600 text-white ring-white/25'
-                : 'bg-zinc-900/85 text-white ring-white/10'
-            }`}
-          >
+      {/* Hover-only label: at most one on screen at a time, so labels never
+          stack/collide near the densely-packed interior. A selected part is
+          communicated by its red highlight + the caption + the side panel. */}
+      {hovered && REGION_LABELS[id] && (
+        <Html center distanceFactor={9} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+          <div className="-translate-y-5 whitespace-nowrap rounded-full bg-zinc-900/90 px-2.5 py-1 text-[11px] font-semibold text-white shadow-lg ring-1 ring-white/15 backdrop-blur">
             {REGION_LABELS[id]}
           </div>
         </Html>
